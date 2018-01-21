@@ -4,4 +4,8 @@ public class OI {
 
 	Sensor sense = new Sensor();
 	Drive drive = new Drive();
+	public void enable() {
+//		drive.
+		drive.set();
+	}
 }

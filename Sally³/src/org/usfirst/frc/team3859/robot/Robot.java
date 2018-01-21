@@ -4,6 +4,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
+import edu.wpi.first.wpilibj.CameraServer;
 //import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
@@ -23,7 +24,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends IterativeRobot {
 	// Encoder enco = new Encoder(1, 0, false, Encoder.EncodingType.k4X);
 	Autonomous auto = new Autonomous();
-//	Autonomous2 auto2 = new Autonomous2();
+	// Autonomous2 auto2 = new Autonomous2();
 	String automode;
 	String autoSelected;
 	char game1;
@@ -34,7 +35,7 @@ public class Robot extends IterativeRobot {
 	final String middleAuto = "Middle";
 	final String leftAuto = "Left";
 	final String rightAuto = "Right";
-//	public int percent = TalonSRX.ControlMode.PercentOutput();
+	// public int percent = TalonSRX.ControlMode.PercentOutput();
 
 	/**
 	 * This function is run when the robot is first started up and should be used
@@ -47,12 +48,15 @@ public class Robot extends IterativeRobot {
 		chooser.addObject("Left", leftAuto);
 		chooser.addObject("Right", rightAuto);
 		chooser.addObject("Turn", "turn");
+		chooser.addObject("Enc Test", "test");
 		SmartDashboard.putData("AutoMode", chooser);
-		SmartDashboard.putNumber("Left Distance", 0);
-		SmartDashboard.putNumber("Right Distance", 0);
-//		drive.SetUp();
+		CameraServer.getInstance().startAutomaticCapture(0);
+
+		// SmartDashboard.putNumber("Left Distance", 0);
+		// SmartDashboard.putNumber("Right Distance", 0);
+		// drive.SetUp();
 		Constants.navx.reset();
-		
+
 	}
 
 	/**
@@ -90,23 +94,19 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		auto.oi.drive.SetUp();
-		// if(init == false) {
-		//// Constants.leftmiddle.reset
-		// sense.enco.reset();
-		// init = true;
-		// }
+		auto.oi.drive.SetUp(false);
+		// auto.oi.enable();
+		if (init == false) {
+			// Constants.leftmiddle.reset
+			init = true;
+		}
 		SmartDashboard.putNumber("NavX Angle", Constants.navx.getAngle());
-//		Constants.rightmiddle.config
-		Constants.rightfront.configSelectedFeedbackSensor(FeedbackDevice.Analog, 0, 1000);
-		double position = Constants.rightfront.getSelectedSensorPosition(0);
+		// Constants.rightmiddle.config
+		// Constants.rightfront.setd
+		// Constants.rightfront.getSelectedSensorPosition(arg0)
+		double position = .001 * (Constants.rightfront.getSelectedSensorPosition(0));
 		SmartDashboard.putNumber("Talon Position", position);
-//		Constants.rightfront.configSelectedFeedbackSensor(FeedbackDevice.Analog, 0, 1000);
-//		double position = Constants.rightfront.getSelectedSensorPosition(0);
-//		SmartDashboard.putNumber("Talon Position", position);
 		SmartDashboard.putNumber("Talon Velocity", Constants.rightfront.getSelectedSensorVelocity(0));
-		Constants.leftfront.set(ControlMode.PercentOutput, xbox.getY(Hand.kLeft));
-		Constants.rightfront.set(ControlMode.PercentOutput, xbox.getY(Hand.kRight));
 	}
 
 	/**
