@@ -3,8 +3,11 @@ package org.usfirst.frc.team3859.robot;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.SensorCollection;
 
 import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 //import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
@@ -35,6 +38,8 @@ public class Robot extends IterativeRobot {
 	final String middleAuto = "Middle";
 	final String leftAuto = "Left";
 	final String rightAuto = "Right";
+	final String turnPID = "PID turn";
+	SensorCollection sensor = new SensorCollection(Constants.armLeft);
 	// public int percent = TalonSRX.ControlMode.PercentOutput();
 
 	/**
@@ -47,15 +52,16 @@ public class Robot extends IterativeRobot {
 		chooser.addObject("Middle ", middleAuto);
 		chooser.addObject("Left", leftAuto);
 		chooser.addObject("Right", rightAuto);
-		chooser.addObject("Turn", "turn");
-		chooser.addObject("Enc Test", "test");
 		SmartDashboard.putData("AutoMode", chooser);
-		CameraServer.getInstance().startAutomaticCapture(0);
+//		sensor.setQuadraturePosition(0, 20000000);
+		Compressor c = new Compressor(0);
+		c.setClosedLoopControl(true);
+		// CameraServer.getInstance().startAutomaticCapture(0);
 
 		// SmartDashboard.putNumber("Left Distance", 0);
 		// SmartDashboard.putNumber("Right Distance", 0);
 		// drive.SetUp();
-		Constants.navx.reset();
+		// Constants.navx.reset();
 
 	}
 
@@ -74,7 +80,7 @@ public class Robot extends IterativeRobot {
 	public void autonomousInit() {
 		autoSelected = chooser.getSelected();
 		System.out.println("Auto selected: " + autoSelected);
-		Constants.navx.reset();
+		// Constants.navx.reset();
 	}
 
 	/**
@@ -83,10 +89,9 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void autonomousPeriodic() {
 		String gameData = DriverStation.getInstance().getGameSpecificMessage();
-		char game1 = gameData.charAt(0);
+		// char game1 = gameData.charAt(0);
 		char game2 = gameData.charAt(1);
-		auto.autoset(autoSelected, game1, game2);
-		SmartDashboard.putNumber("NavX Angle", Constants.navx.getAngle());
+		// auto.autoset(autoSelected, game1, game2);
 	}
 
 	/**
@@ -95,18 +100,22 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 		auto.oi.drive.SetUp(false);
-		// auto.oi.enable();
-		if (init == false) {
-			// Constants.leftmiddle.reset
-			init = true;
-		}
-		SmartDashboard.putNumber("NavX Angle", Constants.navx.getAngle());
+		auto.oi.arm.setUp();
+		auto.oi.enable();
+		Constants.shootPneumatic.set(Value.kReverse);
+		SmartDashboard.putNumber("Position", auto.oi.arm.getPosition());
+//		double angle = (Constants.armLeft.getSelectedSensorPosition(0)) / 240;
+		// if (init == false) {
+		// // Constants.leftmiddle.reset
+		// init = true;
+		// }
 		// Constants.rightmiddle.config
 		// Constants.rightfront.setd
 		// Constants.rightfront.getSelectedSensorPosition(arg0)
-		double position = .001 * (Constants.rightfront.getSelectedSensorPosition(0));
-		SmartDashboard.putNumber("Talon Position", position);
-		SmartDashboard.putNumber("Talon Velocity", Constants.rightfront.getSelectedSensorVelocity(0));
+		// double position = .001 * (Constants.rightfront.getSelectedSensorPosition(0));
+		// SmartDashboard.putNumber("Talon Position", position);
+		// SmartDashboard.putNumber("Talon Velocity",
+		// Constants.rightfront.getSelectedSensorVelocity(0));
 	}
 
 	/**
