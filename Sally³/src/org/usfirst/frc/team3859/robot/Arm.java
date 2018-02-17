@@ -30,6 +30,7 @@ public class Arm {
 		}
 		double runningvalue = ((Constants.armLeft.getSelectedSensorPosition(0) / 240) * 90) / 1024;
 		double position = runningvalue - pointintime;
+		SmartDashboard.putNumber("Position", position);
 		return position;
 	}
 
@@ -45,10 +46,8 @@ public class Arm {
 		double I = SmartDashboard.getNumber("I", 0);
 		// double P = 0.015;
 		// double I = .00005;
-		double voltage = .18;
 		armPID.setPID(P, I, 0);
-		double stuff = Math.cos(((Constants.armLeft.getSelectedSensorPosition(0) / 240) * Math.PI) / 2048) * voltage;
-		SmartDashboard.putNumber("Stuff", stuff);
+		double stuff = SmartDashboard.getNumber("Stuff", 0);
 		double error = value - getPosition();
 
 		Constants.armLeft.set(ControlMode.PercentOutput, armPID.calculate(error) + stuff);

@@ -88,6 +88,11 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
+		if(Constants.sharp.getValue() > 500) {
+			SmartDashboard.putBoolean("Cube Present?", true);
+		}else {
+			SmartDashboard.putBoolean("Cube Present?", false);
+		}
 		autoSelected = chooser.getSelected();
 		SmartDashboard.putNumber("NavX Angle", Constants.navx.getAngle());
 		SmartDashboard.putNumber("Right Enc", auto.oi.drive.getRightEncDistance());
@@ -105,14 +110,24 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		Constants.shootPneumatic.set(Value.kReverse);
 		auto.oi.drive.setUp(false);
 		auto.oi.arm.setUp();
 		auto.oi.enable();
+		
+		
 		SmartDashboard.putNumber("Right Enc", auto.oi.drive.getRightEncDistance());
 		SmartDashboard.putNumber("Left Enc", auto.oi.drive.getLeftEncDistance());
 		SmartDashboard.putNumber("NavX Angle", Constants.navx.getAngle());
 		SmartDashboard.putNumber("Xbox ", Constants.Xbox1.getY(Hand.kLeft));
+		double voltage = .17;
+		double stuff = Math.cos(((Constants.armLeft.getSelectedSensorPosition(0) / 240) * Math.PI) / 2048) * voltage;
+		SmartDashboard.putNumber("Stuff", stuff);
+		SmartDashboard.putNumber("Sharp", Constants.sharp.getValue());
+		if(Constants.sharp.getValue() > 500) {
+			SmartDashboard.putBoolean("Cube Present?", true);
+		}else {
+			SmartDashboard.putBoolean("Cube Present?", false);
+		}
 	}
 
 	/**

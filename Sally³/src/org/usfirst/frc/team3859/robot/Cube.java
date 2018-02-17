@@ -25,23 +25,29 @@ public class Cube {
 			} else {
 				Constants.cubeLeft.set(ControlMode.PercentOutput, -.75);
 				Constants.cubeRight.set(ControlMode.PercentOutput, .75);
-				Constants.roller.set(ControlMode.PercentOutput, .75);
+				Constants.roller.set(ControlMode.PercentOutput, .55);
 				if (SmartDashboard.getBoolean("Cube Present?", false) == true) {
 					Constants.Xbox1.setRumble(RumbleType.kLeftRumble, 1);
-					Timer.delay(1);
-					Constants.Xbox1.setRumble(RumbleType.kLeftRumble, 0);
 				}
 			}
 			break;
 		case SCORE:
+			if(init == false) {
+				Constants.shootPneumatic.set(Value.kForward);
+				init = true;
+			}else {
+				Constants.shootPneumatic.set(Value.kReverse);
+			}
 			Constants.cubeLeft.set(ControlMode.PercentOutput, .8);
 			Constants.cubeRight.set(ControlMode.PercentOutput, -.8);
 			Constants.roller.set(ControlMode.PercentOutput, 0);
 			break;
 		case DISABLE:
+			init = false;
 			Constants.cubeLeft.set(ControlMode.PercentOutput, 0);
 			Constants.cubeRight.set(ControlMode.PercentOutput, 0);
 			Constants.roller.set(ControlMode.PercentOutput, 0);
+			Constants.shootPneumatic.set(Value.kReverse);
 			break;
 		}
 	}

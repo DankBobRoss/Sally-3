@@ -15,10 +15,15 @@ public class OI {
 	Arm arm = new Arm();
 	boolean ptoInit = false;
 	boolean cubeInit = false;
-	boolean belt = false;
+
 	boolean toggle = true;
 	boolean pnueToggle = true;
+	boolean armToggle = true;
+
 	boolean pnue = false;
+	boolean belt = false;
+	boolean armm = false;
+
 	double angle = 0;
 
 	public void enable() {
@@ -50,8 +55,8 @@ public class OI {
 		}
 
 		// CUBE PNEUMATIC
-		if (toggle && Constants.Xbox1.getTriggerAxis(Hand.kRight) >= .5) {
-			toggle = false;
+		if (pnueToggle && Constants.Xbox1.getTriggerAxis(Hand.kRight) >= .5) {
+			pnueToggle = false;
 			if (pnue) {
 				pnue = false;
 				Constants.cubePneumatic.set(Value.kForward);
@@ -64,8 +69,27 @@ public class OI {
 				Constants.cubePneumatic.set(Value.kForward);
 				cubeInit = true;
 			}
-			toggle = true;
+			pnueToggle = true;
 
+		}
+
+		// ARM
+		if (Constants.Xbox1.getTriggerAxis(Hand.kLeft) > .6) {
+			double stuff = SmartDashboard.getNumber("Stuff", 0);
+			Constants.armLeft.set(ControlMode.PercentOutput, (-(Constants.Xbox1.getY(Hand.kLeft)) * .5) + stuff);
+			SmartDashboard.putNumber("Position", arm.getPosition());
+		} else {
+			if (Constants.Xbox1.getBButton()) { // Joystick is to the right
+				SmartDashboard.putNumber("Angle", 0);
+			} else if (Constants.Xbox1.getYButton()) { // Joystick is up
+				SmartDashboard.putNumber("Angle", 45);
+			} else if (Constants.Xbox1.getXButton()) { // Joystick is to the left
+				SmartDashboard.putNumber("Angle", 80);
+			} else if (Constants.Xbox1.getAButton()) { // Joystick is down
+				SmartDashboard.putNumber("Angle", 100);
+			}
+			angle = SmartDashboard.getNumber("Angle", 0);
+			arm.set(angle);
 		}
 
 		// PTO
@@ -74,14 +98,14 @@ public class OI {
 				toggle = false;
 				if (belt) {
 					belt = false;
-					Constants.PTO.set(Value.kReverse);
+					Constants.PTO.set(Value.kForward);
 				} else {
 					belt = true;
-					Constants.PTO.set(Value.kForward);
+					Constants.PTO.set(Value.kReverse);
 				}
 			} else if (!Constants.Xbox1.getBButton()) {
 				if (ptoInit == false) {
-					Constants.PTO.set(Value.kForward);
+					Constants.PTO.set(Value.kReverse);
 					ptoInit = false;
 				}
 				toggle = true;
@@ -90,22 +114,23 @@ public class OI {
 			Constants.PTO.set(Value.kForward);
 		}
 
-		// ARM
-		// if (Constants.Xbox1.getBButton()) { // Joystick is to the right
-		// SmartDashboard.putNumber("Angle", 0);
-		// } else if (Constants.Xbox1.getYButton()) { // Joystick is up
-		// SmartDashboard.putNumber("Angle", 45);
-		// } else if (Constants.Xbox1.getXButton()) { // Joystick is to the left
-		// SmartDashboard.putNumber("Angle", 80);
-		// } else if (Constants.Xbox1.getAButton()) { // Joystick is down
-		// SmartDashboard.putNumber("Angle", 135);
-		// }
-		angle = SmartDashboard.getNumber("Angle", 0);
-		arm.set(angle);
-//		Constants.armLeft.set(ControlMode.PercentOutput, Constants.Xbox1.getY(Hand.kLeft));
+		// DEJAMMING
+		if (Constants.Xbox1.getPOV() == 90) {
+			Constants.cubeLeft.set(ControlMode.PercentOutput, .45);
+			Constants.cubeRight.set(ControlMode.PercentOutput, .6);
+			Constants.roller.set(ControlMode.PercentOutput, .4);
+		} else if (Constants.Xbox1.getPOV() == 270) {
+			Constants.cubeLeft.set(ControlMode.PercentOutput, -.6);
+			Constants.cubeRight.set(ControlMode.PercentOutput, -.45);
+			Constants.roller.set(ControlMode.PercentOutput, .4);
+		}
+
+		// angle = SmartDashboard.getNumber("Angle", 0);
+		// arm.set(angle);
 
 		// XBOX DRIVE
-		// drive.set();
+		Constants.leftFront.set(ControlMode.PercentOutput, Constants.Xbox2.getY(Hand.kLeft) * .5);
+		Constants.rightFront.set(ControlMode.PercentOutput, Constants.Xbox2.getY(Hand.kRight) * .5);
 
 		// WHEEL DRIVE
 
@@ -140,7 +165,7 @@ public class OI {
 		}
 
 		else {
-			drive.move(-Constants.Joystick1.getY(), Constants.DriveWheel.getX());
+			// drive.move(-Constants.Joystick1.getY(), Constants.DriveWheel.getX());
 
 		}
 

@@ -4,6 +4,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.XboxController;
@@ -11,7 +12,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.Joystick;
 
 public class Constants {
-
+	static AnalogInput sharp = new AnalogInput(0);
 	// right drive
 	static TalonSRX rightFront = new TalonSRX(6);
 	static VictorSPX rightMiddle = new VictorSPX(7);
