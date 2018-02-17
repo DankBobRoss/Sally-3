@@ -1,5 +1,7 @@
 package org.usfirst.frc.team3859.robot;
 
+import org.usfirst.frc.team3859.robot.Cube.position;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 
 import edu.wpi.first.wpilibj.Timer;
@@ -29,38 +31,30 @@ public class Autonomous {
 
 	/**
 	 * 
-	 * 
-	 * 
 	 * @param encDistance
-	 * @param speed
 	 * @param order
 	 */
-	public void drive(double encDistance, double speed, double order) {
-		if (init == false) {
-			if (order == 1) {
-				autoTimer.start();
-			}
-			init = true;
-		}
-
+	public void drive(double encDistance, double order) {
+		// if (init == false) {
+		//
+		// init = true;
+		// }
+		double P = SmartDashboard.getNumber("P", 0);
+		double I = SmartDashboard.getNumber("I", 0);
+		double D = SmartDashboard.getNumber("D", 0);
 		if (order == order_) {
-			double error = Math.abs(encDistance) - Math.abs(oi.drive.getEncDistance());
-			if (error >= 1) {
-				drivePID.setPID(0, 0, 0);
-				Constants.rightfront.set(ControlMode.PercentOutput, -drivePID.calculate(error));
-				Constants.leftfront.set(ControlMode.PercentOutput, -drivePID.calculate(error));
-				System.out.print("\n Error: " + turnPID.calculate(error));
-				System.out.print("Time: " + autoTimer.get());
-				// Constants.rightfront.set(ControlMode.PercentOutput,
-				// -jankyPID(oi.drive.getEncDistance(),encDistance,speed));
-				// Constants.leftfront.set(ControlMode.PercentOutput,
-				// -jankyPID(oi.drive.getEncDistance(),encDistance,speed));
-			} else {
-				Constants.leftfront.set(ControlMode.PercentOutput, 0);
-				Constants.rightfront.set(ControlMode.PercentOutput, 0);
-				order_++;
-				init = false;
-			}
+			double error = encDistance - oi.drive.getRightEncDistance();
+			// if (error >= 1) {
+			SmartDashboard.putNumber("Error", error);
+			drivePID.setPID(P, I, D);
+			Constants.rightFront.set(ControlMode.PercentOutput, -drivePID.calculate(error));
+			Constants.leftFront.set(ControlMode.PercentOutput, -drivePID.calculate(error));
+			// } else {
+			// Constants.leftFront.set(ControlMode.PercentOutput, 0);
+			// Constants.rightFront.set(ControlMode.PercentOutput, 0);
+			// order_++;
+			// init = false;
+			// }
 		}
 	}
 
@@ -74,9 +68,6 @@ public class Autonomous {
 	public void timedrive(double time, double speed, double order) {
 		// oi.driver.SetUp();
 		if (init == false) {
-			if (order == 1) {
-				autoTimer.start();
-			}
 			autoTimer.reset();
 			init = true;
 		}
@@ -84,14 +75,14 @@ public class Autonomous {
 		// SmartDashboard.putNumber("Auto Time", autoTimer.get());
 		if (order == order_) {
 			if (autoTimer.get() <= time) {
-				// Constants.leftfront.set(ControlMode.PercentOutput,-speed);
+				// Constants.leftFront.set(ControlMode.PercentOutput,-speed);
 				// to change the voltage for right. change the value below(the one after "-speed
 				// -"
-				Constants.rightfront.set(ControlMode.PercentOutput, -speed);
-				Constants.leftfront.set(ControlMode.PercentOutput, -speed);
+				Constants.rightFront.set(ControlMode.PercentOutput, -speed);
+				Constants.leftFront.set(ControlMode.PercentOutput, -speed);
 			} else {
-				Constants.leftfront.set(ControlMode.PercentOutput, 0);
-				Constants.rightfront.set(ControlMode.PercentOutput, 0);
+				Constants.leftFront.set(ControlMode.PercentOutput, 0);
+				Constants.rightFront.set(ControlMode.PercentOutput, 0);
 				order_++;
 				init = false;
 				// SmartDashboard.putNumber("Auto Current Order", order);
@@ -100,59 +91,45 @@ public class Autonomous {
 	}
 
 	/**
+	 * PID TURN
 	 * 
-	 * 
+	 * @param direction
 	 * @param goal
 	 * @param order
-	 * @param direction
 	 */
-	public void PIDturn(double goal, double order, String direction) {
-		double P = 0;
-		double I = 0;
+	public void turnToAngle(String direction, double goal, double order) {
+		// double P = SmartDashboard.getNumber("P", 0);/*
+		// double I = SmartDashboard.getNumber("I", 0);
+		// double D = SmartDashboard.getNumber("D", 0);*/
+
+		double P = 0.005;
+		double I = .0000045;
 		double D = 0;
 		if (init == false) {
-			if (order_ == 1) {
-				autoTimer.start();
-			}
-			// Constants.navx.reset();
+			Constants.navx.reset();
 			init = true;
 		}
 		double angle = Constants.navx.getAngle();
 
-		// tu = .50001
-		// turnPID.setPID(0.010555555, 0, 0.116);
-		turnPID.setPID(0.010555555, 0, 0.119);
-
+		turnPID.setPID(P, I, D);
+		if (goal == 45) {
+			goal = 50;
+		}
 		double error = Math.abs(goal) - Math.abs(angle);
 		if (order == order_) {
-
-			//
-			//
-			//
-			//
-			// .41785
-			// if (error > 2) {
+			// if (error > .5) {
 			if (direction == "left") {
-				Constants.rightfront.set(ControlMode.PercentOutput, -turnPID.calculate(error));
-				Constants.leftfront.set(ControlMode.PercentOutput, turnPID.calculate(error));
-				System.out.print(turnPID.calculate(error) + autoTimer.get());
-				System.out.print("\nTime: " + autoTimer.get() + "\n\n");
+				Constants.rightFront.set(ControlMode.PercentOutput, -turnPID.calculate(error));
+				Constants.leftFront.set(ControlMode.PercentOutput, turnPID.calculate(error));
 
 			} else if (direction == "right") {
-				times++;
-				if (times == 3) {
-					System.out.print("\n Error: " + turnPID.calculate(error));
-					System.out.print("\n Time: " + autoTimer.get() + "\n");
-					times = 0;
-
-				}
-				Constants.rightfront.set(ControlMode.PercentOutput, turnPID.calculate(error));
-				Constants.leftfront.set(ControlMode.PercentOutput, -turnPID.calculate(error));
+				Constants.rightFront.set(ControlMode.PercentOutput, turnPID.calculate(error));
+				Constants.leftFront.set(ControlMode.PercentOutput, -turnPID.calculate(error));
 
 			}
-			// } else if (error <= 1) {
-			// Constants.rightfront.set(ControlMode.PercentOutput, 0);
-			// Constants.leftfront.set(ControlMode.PercentOutput, 0);
+			// } else if (error <= .5) {
+			// Constants.rightFront.set(ControlMode.PercentOutput, 0);
+			// Constants.leftFront.set(ControlMode.PercentOutput, 0);
 			// order_++;
 			// }
 		}
@@ -164,20 +141,19 @@ public class Autonomous {
 	 * @param time
 	 * @param order
 	 */
-	void cubeDeliver(double time, double order) {
+	void cubeDeliver(double order) {
 		if (init == false) {
-			if (order == 1) {
-				autoTimer.start();
-			}
 			autoTimer.reset();
 			init = true;
 		}
 		if (order == order_) {
-			if (time < autoTimer.get()) {
+			if (autoTimer.get() < 2) {
+				oi.cube.set(position.SCORE);
 				// deliver
-			} else if (time >= autoTimer.get()) {
+			} else if (autoTimer.get() >= 2) {
 				// no deliver
-
+				oi.cube.set(position.DISABLE);
+				order_++;
 			}
 		}
 
@@ -210,14 +186,11 @@ public class Autonomous {
 
 	void turnToAngle(String direction, double goal, double speed, double order) {
 		if (init == false) {
-			if (order == 1) {
-				autoTimer.start();
-			}
 			Constants.navx.reset();
 			autoTimer.reset();
 			init = true;
 		}
-		oi.drive.SetUp(true);
+		oi.drive.setUp(true);
 		double negative = speed * -1;
 		currangle = Constants.navx.getAngle();
 		double RDistance;
@@ -242,14 +215,14 @@ public class Autonomous {
 				switch (direction) {
 				case "right":
 					if (RDistance > 4) {
-						Constants.rightfront.set(ControlMode.PercentOutput,
+						Constants.rightFront.set(ControlMode.PercentOutput,
 								jankyPID(Constants.navx.getAngle(), goal, speed));
-						Constants.leftfront.set(ControlMode.PercentOutput,
+						Constants.leftFront.set(ControlMode.PercentOutput,
 								-jankyPID(Constants.navx.getAngle(), goal, speed));
 
 					} else if (RDistance < 4 && RDistance > -4) {
-						Constants.leftfront.set(ControlMode.PercentOutput, 0);
-						Constants.rightfront.set(ControlMode.PercentOutput, 0);
+						Constants.leftFront.set(ControlMode.PercentOutput, 0);
+						Constants.rightFront.set(ControlMode.PercentOutput, 0);
 						Constants.navx.reset();
 						order_++;
 						init = false;
@@ -258,14 +231,14 @@ public class Autonomous {
 					break;
 				case "left":
 					if (LeftDistance < -4) {
-						Constants.leftfront.set(ControlMode.PercentOutput,
+						Constants.leftFront.set(ControlMode.PercentOutput,
 								jankyPID(Constants.navx.getAngle(), goal, speed));
-						Constants.rightfront.set(ControlMode.PercentOutput,
+						Constants.rightFront.set(ControlMode.PercentOutput,
 								-jankyPID(Constants.navx.getAngle(), goal, speed));
 
 					} else if (LeftDistance > -2 && LeftDistance < 2) {
-						Constants.leftfront.set(ControlMode.PercentOutput, 0);
-						Constants.rightfront.set(ControlMode.PercentOutput, 0);
+						Constants.leftFront.set(ControlMode.PercentOutput, 0);
+						Constants.rightFront.set(ControlMode.PercentOutput, 0);
 						Constants.navx.reset();
 						order_++;
 						init = false;
@@ -285,17 +258,13 @@ public class Autonomous {
 	 */
 	public void nothing(double time, double order) {
 		if (init == false) {
-			if (order == 1) {
-				autoTimer.start();
-				// order_ = 1;
-			}
 			autoTimer.reset();
 			init = true;
 		}
 		if (order == order_) {
 			if (autoTimer.get() < time) {
-				Constants.leftfront.set(ControlMode.PercentOutput, 0);
-				Constants.rightfront.set(ControlMode.PercentOutput, 0);
+				Constants.leftFront.set(ControlMode.PercentOutput, 0);
+				Constants.rightFront.set(ControlMode.PercentOutput, 0);
 			} else if (autoTimer.get() >= time) {
 				order_++;
 				init = false;
@@ -315,24 +284,24 @@ public class Autonomous {
 			autoTimer.start();
 			initiate = true;
 		} else if (initiate == true) {
-			oi.drive.SetUp(true);
+			oi.drive.setUp(false);
 			switch (autoMode) {
 			case "Right":
 				if (side1 == 'R') {
 					nothing(4, 1);
-					drive(144, speed, 2);
-					turnToAngle("left", -90, .3, 3);
-					drive(31.2, speed, 4);
-					cubeDeliver(2, 5);
-					drive(31.2, -speed, 6);
-					turnToAngle("right", 90, .3, 7);
-					drive(24, speed, 8);
-					turnToAngle("left", -90, .3, 9);
+					drive(144, 2);
+					turnToAngle("left", -90, 3);
+					drive(31.2, 4);
+					cubeDeliver(5);
+					drive(31.2, 6);
+					turnToAngle("right", 90, 7);
+					drive(24, 8);
+					turnToAngle("left", -90, 9);
 
 					// other
 					nothing(4, 1);
-					drive(81.72, speed, 2);
-					turnToAngle("left", -45, .3, 2);
+					drive(81.72, 2);
+					turnToAngle("left", -45, 2);
 					// nothing(.5, 3);
 					// timedrive(1, speed, 4);
 					// cubeDeliver(.5, 5);
@@ -342,14 +311,14 @@ public class Autonomous {
 					// turnToAngle("right", 90, .3, 2);
 
 				} else if (side1 == 'L') {
-					drive(168, speed, 1);
-					turnToAngle("left", -90, .3, 2);
-					drive(233.04, speed, 3);
-					turnToAngle("left", -90, .3, 4);
-					drive(43.44, speed, 5);
-					turnToAngle("left", -90, .3, 6);
-					drive(24, speed, 7);
-					cubeDeliver(1, 8);
+					drive(168, 1);
+					turnToAngle("left", -90, 2);
+					drive(233.04, 3);
+					turnToAngle("left", -90, 4);
+					drive(43.44, 5);
+					turnToAngle("left", -90, 6);
+					drive(24, 7);
+					cubeDeliver(8);
 
 					// timedrive(5, speed, 1);
 					// turnToAngle("right", 90, .3, 2);
@@ -364,41 +333,41 @@ public class Autonomous {
 			case "Left":
 				if (side1 == 'L') {
 					nothing(4, 1);
-					drive(144, speed, 2);
-					turnToAngle("right", 90, .3, 3);
-					drive(31.2, speed, 4);
-					cubeDeliver(2, 5);
-					drive(31.2, -speed, 6);
-					turnToAngle("left", -90, .3, 7);
-					drive(24, speed, 8);
-					turnToAngle("right", 90, .3, 9);
+					drive(144, 2);
+					turnToAngle("right", 90, 3);
+					drive(31.2, 4);
+					cubeDeliver(5);
+					drive(31.2, 6);
+					turnToAngle("left", -90, 7);
+					drive(24, 8);
+					turnToAngle("right", 90, 9);
 
 				} else if (side1 == 'R') {
 					timedrive(5, speed, 1);
-					turnToAngle("right", 90, .3, 2);
+					turnToAngle("right", 90, 2);
 					timedrive(7, speed, 3);
-					turnToAngle("right", 90, .3, 4);
+					turnToAngle("right", 90, 4);
 					timedrive(1.1, speed, 5);
-					turnToAngle("right", 90, .3, 6);
+					turnToAngle("right", 90, 6);
 					timedrive(1, speed, 7);
-					cubeDeliver(1, 8);
+					cubeDeliver(8);
 				}
 				break;
 			case "Middle":
 				if (side1 == 'L') {
-					drive(34.68, speed, 1);
-					turnToAngle("left", -45, .3, 2);
-					drive(56.16, speed, 3);
-					turnToAngle("right", 45, .3, 4);
-					drive(16.44, speed, 5);
-					cubeDeliver(.2, 6);
+					drive(34.68, 1);
+					turnToAngle("left", -45, 2);
+					drive(56.16, 3);
+					turnToAngle("right", 45, 4);
+					drive(16.44, 5);
+					cubeDeliver(6);
 				} else if (side1 == 'R') {
-					drive(34.68, speed, 1);
-					turnToAngle("right", 45, .3, 2);
-					drive(30.12, speed, 3);
-					turnToAngle("left", -45, .3, 4);
-					drive(16.44, speed, 5);
-					cubeDeliver(.2, 6);
+					drive(34.68, 1);
+					turnToAngle("right", 45, 2);
+					drive(30.12, 3);
+					turnToAngle("left", -45, 4);
+					drive(16.44, 5);
+					cubeDeliver(6);
 				}
 
 				break;
@@ -406,20 +375,16 @@ public class Autonomous {
 				turnToAngle("right", 270, .3, 1);
 				break;
 			case "PID turn":
-				PIDturn(90, 1, "right");
+				// PIDturn(autoMode, currangle, currangle, currangle);
 
 				break;
 			case "test":
-//				Constants.climb.set(ControlMode.PercentOutput, jankyPID(oi.drive.getEncDistance(), 50, .6));
+				double drive = SmartDashboard.getNumber("Drive Position", 0);
+				drive(100, 1);
 
-				SmartDashboard.putNumber("Encoder Distance", oi.drive.getEncDistance());
-				double position = .001 * (Constants.rightfront.getSelectedSensorPosition(0));
-				SmartDashboard.putNumber("Talon Position", position);
-				SmartDashboard.putNumber("Talon Velocity", Constants.rightfront.getSelectedSensorVelocity(0));
+				// double turnAngle = SmartDashboard.getNumber("Turn Angle", 0);
+				// turnToAngle("right", turnAngle, 1);
 				break;
-			}
-			if (order_ > 10) {
-				autoMode = "test";
 			}
 		}
 	}

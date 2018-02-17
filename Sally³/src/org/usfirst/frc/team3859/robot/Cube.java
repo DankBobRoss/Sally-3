@@ -12,7 +12,7 @@ public class Cube {
 	boolean init = false;
 
 	enum position {
-		INTAKE, SCORE, DISABLE_IN, DISABLE_OUT;
+		INTAKE, SCORE, DISABLE;
 	}
 
 	public void set(position state) {
@@ -21,46 +21,28 @@ public class Cube {
 			if (SmartDashboard.getBoolean("Cube Present?", false) == true) {
 				Constants.cubeLeft.set(ControlMode.PercentOutput, 0);
 				Constants.cubeRight.set(ControlMode.PercentOutput, 0);
-
-				// if (SmartDashboard.getBoolean("Cube Present?", false) == true) {
-				Constants.Xbox1.setRumble(RumbleType.kLeftRumble, 1);
-				Timer.delay(1);
-				Constants.Xbox1.setRumble(RumbleType.kLeftRumble, 0);
-				// }
-
-				// Constants.cubePneumatic.set(Value.kForward);
-
+				Constants.roller.set(ControlMode.PercentOutput, 0);
 			} else {
-				Constants.cubePneumatic.set(Value.kReverse);
 				Constants.cubeLeft.set(ControlMode.PercentOutput, -.75);
-				Constants.cubeRight.set(ControlMode.PercentOutput, -.75);
-				Constants.roller.set(ControlMode.PercentOutput, -.75);
-				// if (SmartDashboard.getBoolean("Cube Present?", false) == true) {
-				// Constants.Xbox1.setRumble(RumbleType.kLeftRumble, 1);
-				// Timer.delay(1);
-				// Constants.Xbox1.setRumble(RumbleType.kLeftRumble, 0);
-				// }
+				Constants.cubeRight.set(ControlMode.PercentOutput, .75);
+				Constants.roller.set(ControlMode.PercentOutput, .75);
+				if (SmartDashboard.getBoolean("Cube Present?", false) == true) {
+					Constants.Xbox1.setRumble(RumbleType.kLeftRumble, 1);
+					Timer.delay(1);
+					Constants.Xbox1.setRumble(RumbleType.kLeftRumble, 0);
+				}
 			}
 			break;
 		case SCORE:
-			 Constants.cubePneumatic.set(Value.kForward);
-
 			Constants.cubeLeft.set(ControlMode.PercentOutput, .8);
-			Constants.cubeRight.set(ControlMode.PercentOutput, .8);
+			Constants.cubeRight.set(ControlMode.PercentOutput, -.8);
+			Constants.roller.set(ControlMode.PercentOutput, 0);
 			break;
-		case DISABLE_OUT:
+		case DISABLE:
 			Constants.cubeLeft.set(ControlMode.PercentOutput, 0);
 			Constants.cubeRight.set(ControlMode.PercentOutput, 0);
-
-			 Constants.cubePneumatic.set(Value.kReverse);
-			break;
-		case DISABLE_IN:
-			Constants.cubeLeft.set(ControlMode.PercentOutput, 0);
-			Constants.cubeRight.set(ControlMode.PercentOutput, 0);
-
-			 Constants.cubePneumatic.set(Value.kForward);
+			Constants.roller.set(ControlMode.PercentOutput, 0);
 			break;
 		}
-
 	}
 }

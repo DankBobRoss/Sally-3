@@ -52,8 +52,9 @@ public class Robot extends IterativeRobot {
 		chooser.addObject("Middle ", middleAuto);
 		chooser.addObject("Left", leftAuto);
 		chooser.addObject("Right", rightAuto);
+		chooser.addObject("test", "test");
 		SmartDashboard.putData("AutoMode", chooser);
-//		sensor.setQuadraturePosition(0, 20000000);
+		// sensor.setQuadraturePosition(0, 20000000);
 		Compressor c = new Compressor(0);
 		c.setClosedLoopControl(true);
 		// CameraServer.getInstance().startAutomaticCapture(0);
@@ -78,7 +79,6 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousInit() {
-		autoSelected = chooser.getSelected();
 		System.out.println("Auto selected: " + autoSelected);
 		// Constants.navx.reset();
 	}
@@ -88,10 +88,16 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
+		autoSelected = chooser.getSelected();
+		SmartDashboard.putNumber("NavX Angle", Constants.navx.getAngle());
+		SmartDashboard.putNumber("Right Enc", auto.oi.drive.getRightEncDistance());
+		SmartDashboard.putNumber("Left Enc", auto.oi.drive.getLeftEncDistance());
+		Constants.PTO.set(Value.kForward);
 		String gameData = DriverStation.getInstance().getGameSpecificMessage();
-		// char game1 = gameData.charAt(0);
-		char game2 = gameData.charAt(1);
-		// auto.autoset(autoSelected, game1, game2);
+		game1 = gameData.charAt(0);
+		game2 = gameData.charAt(1);
+
+		auto.autoset(autoSelected, game1, game2);
 	}
 
 	/**
@@ -99,23 +105,14 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		auto.oi.drive.SetUp(false);
+		Constants.shootPneumatic.set(Value.kReverse);
+		auto.oi.drive.setUp(false);
 		auto.oi.arm.setUp();
 		auto.oi.enable();
-		Constants.shootPneumatic.set(Value.kReverse);
-		SmartDashboard.putNumber("Position", auto.oi.arm.getPosition());
-//		double angle = (Constants.armLeft.getSelectedSensorPosition(0)) / 240;
-		// if (init == false) {
-		// // Constants.leftmiddle.reset
-		// init = true;
-		// }
-		// Constants.rightmiddle.config
-		// Constants.rightfront.setd
-		// Constants.rightfront.getSelectedSensorPosition(arg0)
-		// double position = .001 * (Constants.rightfront.getSelectedSensorPosition(0));
-		// SmartDashboard.putNumber("Talon Position", position);
-		// SmartDashboard.putNumber("Talon Velocity",
-		// Constants.rightfront.getSelectedSensorVelocity(0));
+		SmartDashboard.putNumber("Right Enc", auto.oi.drive.getRightEncDistance());
+		SmartDashboard.putNumber("Left Enc", auto.oi.drive.getLeftEncDistance());
+		SmartDashboard.putNumber("NavX Angle", Constants.navx.getAngle());
+		SmartDashboard.putNumber("Xbox ", Constants.Xbox1.getY(Hand.kLeft));
 	}
 
 	/**
