@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Drive {
 	boolean init = false;
+	boolean leftEncInit = false;
+	boolean rightEncInit = false;
 	boolean init1 = false;
 	double stuff = 0;
 	double rotations = 0;
@@ -66,40 +68,20 @@ public class Drive {
 	}
 
 	public double getRightEncDistance() {
-		if (init == false) {
-			// pointintimeright = (Constants.rightFront.getSelectedSensorPosition(0)/1000) *
-			// Constants.wheelCircumference ;
-			// pointintimeright = Constants.rightFront.getSelectedSensorPosition(0) *
-			// .02827433;
-			pointintimeright = Constants.rightFront.getSelectedSensorPosition(0) * ((.02761165) / 1.5);
-			init = true;
+		if (rightEncInit == false) {
+			Constants.rightEncSensor.setQuadraturePosition(0, 200);
+			rightEncInit = true;
 		}
-		// double runningvalue =
-		// (Constants.rightFront.getSelectedSensorPosition(0)/1000) *
-		// Constants.wheelCircumference ;
-		// double runningvalue = Constants.rightFront.getSelectedSensorPosition(0) *
-		// .02827433;
-		double runningvalue = Constants.rightFront.getSelectedSensorPosition(0) * ((.02761165) / 1.5);
-		double distance = runningvalue - pointintimeright;
+		double distance = Constants.rightFront.getSelectedSensorPosition(0) * ((.02761165) / 1.5);
 		return distance;
 	}
 
 	public double getLeftEncDistance() {
-		if (init1 == false) {
-
-			// pointintimeleft = (Constants.leftFront.getSelectedSensorPosition(0)/1000) *
-			// Constants.wheelCircumference ;
-			// pointintimeleft = Constants.leftFront.getSelectedSensorPosition(0)*
-			// .02827433;
-			pointintimeleft = Constants.leftFront.getSelectedSensorPosition(0) * ((.02761165) / 1.5);
-			init1 = true;
+		if (leftEncInit == false) {
+			Constants.rightEncSensor.setQuadraturePosition(0, 200);
+			leftEncInit = true;
 		}
-		// double runningvalue = (Constants.leftFront.getSelectedSensorPosition(0)/1000)
-		// * Constants.wheelCircumference ;
-		// double runningvalue = Constants.leftFront.getSelectedSensorPosition(0) *
-		// .02827433;
-		double runningvalue = Constants.leftFront.getSelectedSensorPosition(0) * ((.02761165) / 1.5);
-		double distance = runningvalue - pointintimeleft;
+		double distance = Constants.rightFront.getSelectedSensorPosition(0) * ((.02761165) / 1.5);
 		return distance;
 	}
 
@@ -128,32 +110,76 @@ public class Drive {
 	double valueW;
 	double valueJ;
 
+	// Function to set left and right drive speeds
 	public void drive(double valueJ) {
+		rightDrive(valueJ);
+		leftDrive(valueJ);
+	}
+
+	// Function to set right drive speed
+	public void rightDrive(double speed) {
+		rightSet(speed);
+	}
+
+	// Function to set left drive speed
+	public void leftDrive(double speed) {
+		leftSet(speed);
+	}
+
+	// Function to set left drive speed and apply a multiplier
+	public void leftDrive(double speed, double multiplier) {
+		double newSpeed = speed * multiplier;
+		leftSet(newSpeed);
+	}
+
+	// Function to set right drive speed and apply a multiplier
+	public void rightDrive(double speed, double multiplier) {
+		double newSpeed = speed * multiplier;
+		leftSet(newSpeed);
+	}
+
+	// Functions to assign speed to CAN talon associated with drive motors
+
+	////////////////////////////////////////////////////////////////////
+	public void leftSet(double valueJ) {
 		Constants.leftFront.set(ControlMode.PercentOutput, valueJ);
+	}
+
+	public void rightSet(double valueJ) {
 		Constants.rightFront.set(ControlMode.PercentOutput, valueJ);
 	}
 
-	public double leftdrive(double valueJ, double multiplier) {
-		double leftdrive = valueJ * multiplier;
-		return leftdrive;
-	}
-
+	////////////////////////////////////////////////////////////////////
+	// public void drive(double valueJ) {
+	// Constants.leftFront.set(ControlMode.PercentOutput, valueJ);
+	// Constants.rightFront.set(ControlMode.PercentOutput, valueJ);
+	// }
+	// public void leftdrive(double valueJ) {
+	// Constants.leftFront.set(ControlMode.PercentOutput, valueJ);
+	// }
+	// public void rightderive(double valueJ) {
+	// Constants.rightFront.set(ControlMode.PercentOutput, valueJ);
+	// }
+	// public double leftdrive (double valueJ, double multiplier) {
+	// double leftdrive = valueJ*multiplier;
+	// return leftdrive;
+	// }
 	public void Stick() {
-		valueW = Constants.DriveWheel.getX();
-		valueJ = Constants.Joystick1.getY();
+		valueW = Constants.driveWheel.getX();
+		valueJ = Constants.joystick1.getY();
 
 		if (valueJ > 0) {
-			Constants.rightFront.set(ControlMode.PercentOutput, valueJ);
-			Constants.leftFront.set(ControlMode.PercentOutput, leftdrive(valueJ, 0.9));
+			rightDrive(valueJ, 1);
+			leftDrive(valueJ, 1);
 		} else if (valueJ < 0) {
-			Constants.rightFront.set(ControlMode.PercentOutput, valueJ);
-			Constants.leftFront.set(ControlMode.PercentOutput, leftdrive(valueJ, 0.9));
+			rightDrive(valueJ, 1);
+			leftDrive(valueJ, 1);
 		} else if (valueJ >= 0.5) {
-			Constants.rightFront.set(ControlMode.PercentOutput, 0.5);
-			Constants.leftFront.set(ControlMode.PercentOutput, leftdrive(0.5, 0.9));
+			rightDrive(0.5, 1);
+			leftDrive(0.5, 1);
 		} else if (valueJ <= -0.5) {
-			Constants.rightFront.set(ControlMode.PercentOutput, -0.5);
-			Constants.leftFront.set(ControlMode.PercentOutput, leftdrive(-0.5, 0.9));
+			rightDrive(-0.5, 1);
+			leftDrive(-0.5, 1);
 
 		}
 	}
@@ -186,39 +212,5 @@ public class Drive {
 
 		// Constants.rightFront.getSelectedSensorVelocity(0);
 
-	}
-
-	public void turn(double speed) {
-		Constants.rightFront.set(ControlMode.PercentOutput, speed);
-		Constants.leftFront.set(ControlMode.PercentOutput, speed);
-		Constants.leftFront.set(ControlMode.PercentOutput, speed);
-		Constants.rightFront.set(ControlMode.PercentOutput, speed);
-	}
-
-	public double TurnSense(double Ptart) {
-		double carp;
-		carp = .1 * Ptart * Ptart * Ptart + Ptart * (1 - .1);
-		return carp;
-	}
-
-	public double Inverse(double Sstart) {
-		double inert;
-		inert = (Sstart - pre) * SmartDashboard.getNumber("Inverse", .25) + Sstart;
-		pre = Sstart;
-		return inert;
-	}
-
-	public void point(double turn) {
-		Constants.rightFront.set(ControlMode.PercentOutput, -turn);
-		Constants.leftFront.set(ControlMode.PercentOutput, -turn);
-		Constants.rightFront.set(ControlMode.PercentOutput, -turn);
-		Constants.leftFront.set(ControlMode.PercentOutput, -turn);
-	}
-
-	public void movewheel(double speed, double turn) {
-		Constants.rightFront.set(ControlMode.PercentOutput, -(Inverse(speed) - (Inverse(speed) * TurnSense(turn))));
-		Constants.leftFront.set(ControlMode.PercentOutput, Inverse(speed) + (Inverse(speed) * TurnSense(turn)));
-		Constants.rightFront.set(ControlMode.PercentOutput, -(Inverse(speed) - (Inverse(speed) * TurnSense(turn))));
-		Constants.leftFront.set(ControlMode.PercentOutput, Inverse(speed) + (Inverse(speed) * TurnSense(turn)));
 	}
 }

@@ -1,18 +1,37 @@
 package org.usfirst.frc.team3859.robot;
 
+import com.ctre.phoenix.motorcontrol.SensorCollection;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.Joystick;
 
 public class Constants {
-	static AnalogInput sharp = new AnalogInput(0);
+
+	static Compressor c = new Compressor(0);
+	// INTAKE
+	enum position {
+		INTAKE, SCORE, DISABLE, DEJAM;
+	}
+
+	enum pnuematic {
+		kForward, kReverse;
+	}
+
+	// ARM
+
+	enum armPos {
+		INTAKE, SWITCHSHOT, BACKSHOT, TEST;
+	}
+
 	// right drive
 	static TalonSRX rightFront = new TalonSRX(6);
 	static VictorSPX rightMiddle = new VictorSPX(7);
@@ -34,6 +53,7 @@ public class Constants {
 	//
 	static DoubleSolenoid cubePneumatic = new DoubleSolenoid(2, 1);
 	static DoubleSolenoid shootPneumatic = new DoubleSolenoid(3, 5);
+	
 	/**
 	 * ENGAGED = REVERSE; DISENGAGED = FORWARD;
 	 */
@@ -42,12 +62,17 @@ public class Constants {
 	// eh
 
 	static AHRS navx = new AHRS(SPI.Port.kMXP);
+	static AnalogInput sharp = new AnalogInput(0);
+
+	static SensorCollection armSensor = new SensorCollection(Constants.armLeft);
+	static SensorCollection rightEncSensor = new SensorCollection(Constants.rightFront);
+	static SensorCollection leftEncSensor = new SensorCollection(Constants.leftFront);
 
 	static XboxController Xbox1 = new XboxController(2);
 	static XboxController Xbox2 = new XboxController(3);
 
-	static Joystick Joystick1 = new Joystick(0);
-	static Joystick DriveWheel = new Joystick(1);
+	static Joystick joystick1 = new Joystick(0);
+	static Joystick driveWheel = new Joystick(1);
 
 	// VARIABLES
 

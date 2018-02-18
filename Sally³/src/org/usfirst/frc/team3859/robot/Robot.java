@@ -1,10 +1,13 @@
 package org.usfirst.frc.team3859.robot;
 
+import org.usfirst.frc.team3859.robot.Constants.armPos;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.SensorCollection;
 
+import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -32,14 +35,17 @@ public class Robot extends IterativeRobot {
 	String autoSelected;
 	char game1;
 	char game2;
-	boolean init;
+	boolean init = false;;
+
 	SendableChooser<String> chooser = new SendableChooser<String>();
-	XboxController xbox = new XboxController(1);
+	SendableChooser<String> autoChoice = new SendableChooser<String>();
+
+	// UsbCamera camera = CameraServer.getInstance().startAutomaticCapture(0);
+
 	final String middleAuto = "Middle";
 	final String leftAuto = "Left";
 	final String rightAuto = "Right";
 	final String turnPID = "PID turn";
-	SensorCollection sensor = new SensorCollection(Constants.armLeft);
 	// public int percent = TalonSRX.ControlMode.PercentOutput();
 
 	/**
@@ -48,39 +54,35 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void robotInit() {
+		double voltage = .14;
+		double stuff = Math.cos(((Constants.armLeft.getSelectedSensorPosition(0) / 240) * Math.PI) / 2048) * voltage;
+		SmartDashboard.putNumber("Stuff", stuff);
+
+		autoChoice.addDefault("Deliver", "deliver");
+		autoChoice.addObject("Cross", "cross");
+		autoChoice.addObject("Test", "test");
+
 		chooser.addDefault("Default", "default");
 		chooser.addObject("Middle ", middleAuto);
 		chooser.addObject("Left", leftAuto);
 		chooser.addObject("Right", rightAuto);
-		chooser.addObject("test", "test");
 		SmartDashboard.putData("AutoMode", chooser);
-		// sensor.setQuadraturePosition(0, 20000000);
-		Compressor c = new Compressor(0);
-		c.setClosedLoopControl(true);
-		// CameraServer.getInstance().startAutomaticCapture(0);
-
-		// SmartDashboard.putNumber("Left Distance", 0);
-		// SmartDashboard.putNumber("Right Distance", 0);
-		// drive.SetUp();
-		// Constants.navx.reset();
+		SmartDashboard.putData("Auto Choice", autoChoice);
+		Constants.c.setClosedLoopControl(true);
+		// camera.setResolution(1080, 1080);
+		CameraServer.getInstance().startAutomaticCapture(0);
 
 	}
 
-	/**
-	 * This autonomous (along with the chooser code above) shows how to select
-	 * between different autonomous modes using the dashboard. The sendable chooser
-	 * code works with the Java SmartDashboard. If you prefer the LabVIEW Dashboard,
-	 * remove all of the chooser code and uncomment the getString line to get the
-	 * auto name from the text box below the Gyro
-	 *
-	 * You can add additional auto modes by adding additional comparisons to the
-	 * switch structure below with additional strings. If using the SendableChooser
-	 * make sure to add them to the chooser code above as well.
-	 */
 	@Override
 	public void autonomousInit() {
-		System.out.println("Auto selected: " + autoSelected);
-		// Constants.navx.reset();
+		int startAngle = 57;
+		startAngle = ((startAngle * 240) / 90) * 1024;
+
+		SmartDashboard.putNumber("Start Angle", startAngle);
+
+		auto.oi.drive.setUp(true);
+		Constants.navx.reset();
 	}
 
 	/**
@@ -88,21 +90,28 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
-		if(Constants.sharp.getValue() > 500) {
+		if (init == false) {
+			// Constants.armSensor.setQuadraturePosition(startAngle, 200); // this is where
+			// we set up the starting config
+			Constants.armSensor.setQuadraturePosition(0, 200);
+			init = true;
+		}
+		// auto.oi.arm.set(armPos.INTAKE);
+		if (Constants.sharp.getValue() > 500) {
 			SmartDashboard.putBoolean("Cube Present?", true);
-		}else {
+		} else {
 			SmartDashboard.putBoolean("Cube Present?", false);
 		}
-		autoSelected = chooser.getSelected();
 		SmartDashboard.putNumber("NavX Angle", Constants.navx.getAngle());
 		SmartDashboard.putNumber("Right Enc", auto.oi.drive.getRightEncDistance());
 		SmartDashboard.putNumber("Left Enc", auto.oi.drive.getLeftEncDistance());
 		Constants.PTO.set(Value.kForward);
+
 		String gameData = DriverStation.getInstance().getGameSpecificMessage();
 		game1 = gameData.charAt(0);
 		game2 = gameData.charAt(1);
 
-		auto.autoset(autoSelected, game1, game2);
+		auto.autoset(chooser.getSelected(), autoChoice.getSelected(), game1, game2);
 	}
 
 	/**
@@ -110,24 +119,32 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
+		int startAngle = 57;
+		startAngle = ((startAngle * 240) / 90) * 1024;
+
+		SmartDashboard.putNumber("Start Angle", startAngle);
+		SmartDashboard.putNumber("Arm Position RAW", Constants.armLeft.getSelectedSensorPosition(0));
+		if (init == false) {
+			Constants.armSensor.setQuadraturePosition(0, 200);
+			init = true;
+		}
 		auto.oi.drive.setUp(false);
 		auto.oi.arm.setUp();
 		auto.oi.enable();
-		
-		
+
+		SmartDashboard.putNumber("Position", auto.oi.arm.getPosition());
 		SmartDashboard.putNumber("Right Enc", auto.oi.drive.getRightEncDistance());
 		SmartDashboard.putNumber("Left Enc", auto.oi.drive.getLeftEncDistance());
 		SmartDashboard.putNumber("NavX Angle", Constants.navx.getAngle());
-		SmartDashboard.putNumber("Xbox ", Constants.Xbox1.getY(Hand.kLeft));
-		double voltage = .17;
-		double stuff = Math.cos(((Constants.armLeft.getSelectedSensorPosition(0) / 240) * Math.PI) / 2048) * voltage;
-		SmartDashboard.putNumber("Stuff", stuff);
-		SmartDashboard.putNumber("Sharp", Constants.sharp.getValue());
-		if(Constants.sharp.getValue() > 500) {
+
+		if (Constants.sharp.getValue() > 500) {
 			SmartDashboard.putBoolean("Cube Present?", true);
-		}else {
+		} else {
 			SmartDashboard.putBoolean("Cube Present?", false);
 		}
+
+		SmartDashboard.putNumber("Left Enc Native", Constants.leftFront.getSelectedSensorPosition(0));
+		SmartDashboard.putNumber("Right Enc Native", Constants.rightFront.getSelectedSensorPosition(0));
 	}
 
 	/**

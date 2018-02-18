@@ -1,6 +1,7 @@
 package org.usfirst.frc.team3859.robot;
 
-import org.usfirst.frc.team3859.robot.Cube.position;
+import org.usfirst.frc.team3859.robot.Constants.armPos;
+import org.usfirst.frc.team3859.robot.Constants.position;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 
@@ -11,8 +12,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class OI {
 	Drive drive = new Drive();
-	Cube cube = new Cube();
+	Intake in = new Intake();
 	Arm arm = new Arm();
+	Climb climb = new Climb();
 	boolean ptoInit = false;
 	boolean cubeInit = false;
 
@@ -47,11 +49,13 @@ public class OI {
 
 		// CUBE MOTORS
 		if (Constants.Xbox1.getBumper(Hand.kLeft)) {
-			cube.set(position.INTAKE);
+			in.set(position.INTAKE);
+		} else if (Constants.Xbox1.getBumper(Hand.kLeft) && Constants.Xbox1.getPOV() == 90) {
+			in.set(position.DEJAM);
 		} else if (Constants.Xbox1.getBumper(Hand.kRight)) {
-			cube.set(position.SCORE);
+			in.set(position.SCORE);
 		} else {
-			cube.set(position.DISABLE);
+			in.set(position.DISABLE);
 		}
 
 		// CUBE PNEUMATIC
@@ -79,51 +83,43 @@ public class OI {
 			Constants.armLeft.set(ControlMode.PercentOutput, (-(Constants.Xbox1.getY(Hand.kLeft)) * .5) + stuff);
 			SmartDashboard.putNumber("Position", arm.getPosition());
 		} else {
-			if (Constants.Xbox1.getBButton()) { // Joystick is to the right
-				SmartDashboard.putNumber("Angle", 0);
+			if (Constants.Xbox1.getAButton()) { // Joystick is to the right
+				arm.set(armPos.INTAKE);
 			} else if (Constants.Xbox1.getYButton()) { // Joystick is up
-				SmartDashboard.putNumber("Angle", 45);
+				arm.set(armPos.SWITCHSHOT);
 			} else if (Constants.Xbox1.getXButton()) { // Joystick is to the left
-				SmartDashboard.putNumber("Angle", 80);
-			} else if (Constants.Xbox1.getAButton()) { // Joystick is down
-				SmartDashboard.putNumber("Angle", 100);
+				arm.set(armPos.BACKSHOT);
 			}
-			angle = SmartDashboard.getNumber("Angle", 0);
-			arm.set(angle);
 		}
 
-		// PTO
-		if (DriverStation.getInstance().getMatchTime() >= 2) {
-			if (toggle && Constants.Xbox1.getBButton()) {
-				toggle = false;
-				if (belt) {
-					belt = false;
-					Constants.PTO.set(Value.kForward);
-				} else {
-					belt = true;
-					Constants.PTO.set(Value.kReverse);
-				}
-			} else if (!Constants.Xbox1.getBButton()) {
-				if (ptoInit == false) {
-					Constants.PTO.set(Value.kReverse);
-					ptoInit = false;
-				}
-				toggle = true;
-			}
+		if (Constants.Xbox1.getRawButton(9)) {
+			Constants.armSensor.setQuadraturePosition(0, 200);
 		} else {
-			Constants.PTO.set(Value.kForward);
+
 		}
 
-		// DEJAMMING
-		if (Constants.Xbox1.getPOV() == 90) {
-			Constants.cubeLeft.set(ControlMode.PercentOutput, .45);
-			Constants.cubeRight.set(ControlMode.PercentOutput, .6);
-			Constants.roller.set(ControlMode.PercentOutput, .4);
-		} else if (Constants.Xbox1.getPOV() == 270) {
-			Constants.cubeLeft.set(ControlMode.PercentOutput, -.6);
-			Constants.cubeRight.set(ControlMode.PercentOutput, -.45);
-			Constants.roller.set(ControlMode.PercentOutput, .4);
+		// CLIMB
+
+		// if (DriverStation.getInstance().getMatchTime() >= 1.5) {
+		if (toggle && Constants.Xbox1.getBButton()) {
+			toggle = false;
+			if (belt) {
+				belt = false;
+				Constants.PTO.set(Value.kForward);
+			} else {
+				belt = true;
+				Constants.PTO.set(Value.kReverse);
+			}
+		} else if (!Constants.Xbox1.getBButton()) {
+			if (ptoInit == false) {
+				Constants.PTO.set(Value.kForward);
+				ptoInit = true;
+			}
+			toggle = true;
 		}
+		// } else {
+		// Constants.PTO.set(Value.kForward);
+		// }
 
 		// angle = SmartDashboard.getNumber("Angle", 0);
 		// arm.set(angle);
@@ -134,7 +130,7 @@ public class OI {
 
 		// WHEEL DRIVE
 
-		if (Constants.Joystick1.getRawButton(2)) {// turn in place button X
+		if (Constants.joystick1.getRawButton(2)) {// turn in place button X
 
 			Constants.rightFront.set(ControlMode.PercentOutput, drive.valueJ);
 			Constants.leftFront.set(ControlMode.PercentOutput, -drive.valueJ);
@@ -143,29 +139,29 @@ public class OI {
 
 		}
 
-		else if (Constants.Joystick1.getRawButton(4)) {// adjust button
+		else if (Constants.joystick1.getRawButton(4)) {// adjust button
 			Constants.rightFront.set(ControlMode.PercentOutput, drive.valueJ);
 			Constants.leftFront.set(ControlMode.PercentOutput, -drive.valueJ);
 
 			drive.spinspot(.25);
 
-		} else if (Constants.Joystick1.getRawButton(5)) {// adjust button
+		} else if (Constants.joystick1.getRawButton(5)) {// adjust button
 			Constants.rightFront.set(ControlMode.PercentOutput, drive.valueJ);
 			Constants.leftFront.set(ControlMode.PercentOutput, -drive.valueJ);
 
 			drive.spinspot(-.25);
 
-		} else if (Constants.Joystick1.getRawButton(1)) {// TURBO NGHHHHHHH
+		} else if (Constants.joystick1.getRawButton(1)) {// TURBO NGHHHHHHH
 			Constants.rightFront.set(ControlMode.PercentOutput, drive.valueJ);
 			Constants.leftFront.set(ControlMode.PercentOutput, -drive.valueJ);
 			// drive.inverse(0.5);
-			drive.move(1, Constants.DriveWheel.getX());
-		} else if (Constants.Joystick1.getRawButton(3)) {// slowwwwwwwwwwww
-			drive.move(0.3, Constants.DriveWheel.getX());
+			drive.move(1, Constants.driveWheel.getX());
+		} else if (Constants.joystick1.getRawButton(3)) {// slowwwwwwwwwwww
+			drive.move(0.3, Constants.driveWheel.getX());
 		}
 
 		else {
-			// drive.move(-Constants.Joystick1.getY(), Constants.DriveWheel.getX());
+			// drive.move(-Constants.joystick1.getY(), Constants.driveWheel.getX());
 
 		}
 
