@@ -7,6 +7,7 @@ import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -17,9 +18,10 @@ import edu.wpi.first.wpilibj.Joystick;
 public class Constants {
 
 	static Compressor c = new Compressor(0);
+
 	// INTAKE
 	enum position {
-		INTAKE, SCORE, DISABLE, DEJAM;
+		INTAKE, SCORE_HARD, SCORE_MEDIUM, DISABLE, DEJAM;
 	}
 
 	enum pnuematic {
@@ -29,7 +31,7 @@ public class Constants {
 	// ARM
 
 	enum armPos {
-		INTAKE, SWITCHSHOT, BACKSHOT, TEST;
+		INTAKE, SWITCHSHOT, BACKSHOT, TEST, STARTINGCONFIG;
 	}
 
 	// right drive
@@ -52,8 +54,13 @@ public class Constants {
 	static VictorSPX roller = new VictorSPX(11);
 	//
 	static DoubleSolenoid cubePneumatic = new DoubleSolenoid(2, 1);
-	static DoubleSolenoid shootPneumatic = new DoubleSolenoid(3, 5);
-	
+	// static DoubleSolenoid shootPneumatic0 = new DoubleSolenoid(3,5);
+	// static DoubleSolenoid shootPneumatic1 = new DoubleSolenoid(7,6);
+	static Solenoid superPunch0 = new Solenoid(3);
+	static Solenoid superPunch1 = new Solenoid(5);
+	static Solenoid superPunch2 = new Solenoid(6);
+	static Solenoid superPunch3 = new Solenoid(7);
+
 	/**
 	 * ENGAGED = REVERSE; DISENGAGED = FORWARD;
 	 */
@@ -63,13 +70,15 @@ public class Constants {
 
 	static AHRS navx = new AHRS(SPI.Port.kMXP);
 	static AnalogInput sharp = new AnalogInput(0);
+	static DigitalInput limitSwitch = new DigitalInput(9);
 
 	static SensorCollection armSensor = new SensorCollection(Constants.armLeft);
+	
 	static SensorCollection rightEncSensor = new SensorCollection(Constants.rightFront);
 	static SensorCollection leftEncSensor = new SensorCollection(Constants.leftFront);
 
-	static XboxController Xbox1 = new XboxController(2);
-	static XboxController Xbox2 = new XboxController(3);
+	static XboxController xbox1 = new XboxController(2);
+	static XboxController xbox2 = new XboxController(3);
 
 	static Joystick joystick1 = new Joystick(0);
 	static Joystick driveWheel = new Joystick(1);
@@ -77,6 +86,10 @@ public class Constants {
 	// VARIABLES
 
 	static double wheelDiameter = 6;
-	static double wheelCircumference = Math.pow((wheelDiameter * .5), 2) * Math.PI;
+	static double wheelCircumference = (wheelDiameter) * Math.PI;
+
+	static double intake = 0;
+	static double switchShot = 45;
+	static double backShot = 90;
 
 }

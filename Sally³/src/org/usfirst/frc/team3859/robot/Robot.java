@@ -35,7 +35,7 @@ public class Robot extends IterativeRobot {
 	String autoSelected;
 	char game1;
 	char game2;
-	boolean init = false;;
+	boolean init = false;
 
 	SendableChooser<String> chooser = new SendableChooser<String>();
 	SendableChooser<String> autoChoice = new SendableChooser<String>();
@@ -54,9 +54,6 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void robotInit() {
-		double voltage = .14;
-		double stuff = Math.cos(((Constants.armLeft.getSelectedSensorPosition(0) / 240) * Math.PI) / 2048) * voltage;
-		SmartDashboard.putNumber("Stuff", stuff);
 
 		autoChoice.addDefault("Deliver", "deliver");
 		autoChoice.addObject("Cross", "cross");
@@ -80,9 +77,15 @@ public class Robot extends IterativeRobot {
 		startAngle = ((startAngle * 240) / 90) * 1024;
 
 		SmartDashboard.putNumber("Start Angle", startAngle);
-
 		auto.oi.drive.setUp(true);
 		Constants.navx.reset();
+		if (init == false) {
+			// Constants.armSensor.setQuadraturePosition(startAngle, 200); // this is where
+			// we set up the starting config
+			Constants.armSensor.setQuadraturePosition(-242045, 200);
+			// Constants.armSensor.setQuadraturePosition(0, 200);
+			init = true;
+		}
 	}
 
 	/**
@@ -90,30 +93,27 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
-		if (init == false) {
-			// Constants.armSensor.setQuadraturePosition(startAngle, 200); // this is where
-			// we set up the starting config
-			Constants.armSensor.setQuadraturePosition(0, 200);
-			init = true;
-		}
 		// auto.oi.arm.set(armPos.INTAKE);
-		if (Constants.sharp.getValue() > 500) {
+		if (Constants.sharp.getValue() > 1500) {
 			SmartDashboard.putBoolean("Cube Present?", true);
 		} else {
 			SmartDashboard.putBoolean("Cube Present?", false);
 		}
-		SmartDashboard.putNumber("NavX Angle", Constants.navx.getAngle());
-		SmartDashboard.putNumber("Right Enc", auto.oi.drive.getRightEncDistance());
-		SmartDashboard.putNumber("Left Enc", auto.oi.drive.getLeftEncDistance());
+		SmartDashboard.putNumber("Position", auto.oi.arm.getPosition());
 		Constants.PTO.set(Value.kForward);
 
 		String gameData = DriverStation.getInstance().getGameSpecificMessage();
 		game1 = gameData.charAt(0);
 		game2 = gameData.charAt(1);
-
-		auto.autoset(chooser.getSelected(), autoChoice.getSelected(), game1, game2);
+		auto.oi.arm.set(100);
+		// auto.autoset(chooser.getSelected(), autoChoice.getSelected(), game1, game2);
 	}
 
+	// @Override
+	// public void teleopInit(){
+	//
+	//
+	// }
 	/**
 	 * This function is called periodically during operator control
 	 */
@@ -121,23 +121,23 @@ public class Robot extends IterativeRobot {
 	public void teleopPeriodic() {
 		int startAngle = 57;
 		startAngle = ((startAngle * 240) / 90) * 1024;
-
 		SmartDashboard.putNumber("Start Angle", startAngle);
+
 		SmartDashboard.putNumber("Arm Position RAW", Constants.armLeft.getSelectedSensorPosition(0));
 		if (init == false) {
-			Constants.armSensor.setQuadraturePosition(0, 200);
+			Constants.armSensor.setQuadraturePosition(-242045, 200);
+			auto.oi.drive.setUp(false);
+			auto.oi.arm.setUp();
 			init = true;
 		}
-		auto.oi.drive.setUp(false);
-		auto.oi.arm.setUp();
-		auto.oi.enable();
-
-		SmartDashboard.putNumber("Position", auto.oi.arm.getPosition());
+		// auto.oi.enable();
+		SmartDashboard.putNumber("Position", (-auto.oi.arm.getPosition()));
 		SmartDashboard.putNumber("Right Enc", auto.oi.drive.getRightEncDistance());
 		SmartDashboard.putNumber("Left Enc", auto.oi.drive.getLeftEncDistance());
 		SmartDashboard.putNumber("NavX Angle", Constants.navx.getAngle());
+		SmartDashboard.putNumber("Sharp", Constants.sharp.getValue());
 
-		if (Constants.sharp.getValue() > 500) {
+		if (Constants.sharp.getValue() > 1500) {
 			SmartDashboard.putBoolean("Cube Present?", true);
 		} else {
 			SmartDashboard.putBoolean("Cube Present?", false);
@@ -145,6 +145,7 @@ public class Robot extends IterativeRobot {
 
 		SmartDashboard.putNumber("Left Enc Native", Constants.leftFront.getSelectedSensorPosition(0));
 		SmartDashboard.putNumber("Right Enc Native", Constants.rightFront.getSelectedSensorPosition(0));
+		SmartDashboard.putBoolean("Limit Switch", Constants.limitSwitch.get());
 	}
 
 	/**

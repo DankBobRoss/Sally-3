@@ -48,18 +48,20 @@ public class OI {
 		// }
 
 		// CUBE MOTORS
-		if (Constants.Xbox1.getBumper(Hand.kLeft)) {
+		if (Constants.xbox1.getBumper(Hand.kLeft) && Constants.xbox1.getPOV() != 90) {
 			in.set(position.INTAKE);
-		} else if (Constants.Xbox1.getBumper(Hand.kLeft) && Constants.Xbox1.getPOV() == 90) {
+		} else if (Constants.xbox1.getBumper(Hand.kLeft) && Constants.xbox1.getPOV() == 90) {
 			in.set(position.DEJAM);
-		} else if (Constants.Xbox1.getBumper(Hand.kRight)) {
-			in.set(position.SCORE);
+		} else if (Constants.xbox1.getBumper(Hand.kRight) && Constants.xbox1.getPOV() != 180) {
+			in.set(position.SCORE_MEDIUM);
+		} else if (Constants.xbox1.getBumper(Hand.kRight) && Constants.xbox1.getPOV() == 180) {
+			in.set(position.SCORE_HARD);
 		} else {
 			in.set(position.DISABLE);
 		}
 
 		// CUBE PNEUMATIC
-		if (pnueToggle && Constants.Xbox1.getTriggerAxis(Hand.kRight) >= .5) {
+		if (pnueToggle && Constants.xbox1.getTriggerAxis(Hand.kRight) >= .5) {
 			pnueToggle = false;
 			if (pnue) {
 				pnue = false;
@@ -68,9 +70,9 @@ public class OI {
 				pnue = true;
 				Constants.cubePneumatic.set(Value.kReverse);
 			}
-		} else if (!(Constants.Xbox1.getTriggerAxis(Hand.kRight) >= .5)) {
+		} else if (!(Constants.xbox1.getTriggerAxis(Hand.kRight) >= .5)) {
 			if (cubeInit == false) {
-				Constants.cubePneumatic.set(Value.kForward);
+				Constants.cubePneumatic.set(Value.kReverse);
 				cubeInit = true;
 			}
 			pnueToggle = true;
@@ -78,41 +80,62 @@ public class OI {
 		}
 
 		// ARM
-		if (Constants.Xbox1.getTriggerAxis(Hand.kLeft) > .6) {
-			double stuff = SmartDashboard.getNumber("Stuff", 0);
-			Constants.armLeft.set(ControlMode.PercentOutput, (-(Constants.Xbox1.getY(Hand.kLeft)) * .5) + stuff);
+		if (Constants.xbox1.getTriggerAxis(Hand.kLeft) > .6) {
+			double voltage = .14;
+			double stuff = Math.cos(((Constants.armLeft.getSelectedSensorPosition(0) / 240) * Math.PI) / 2048)
+					* voltage;
+			Constants.armLeft.set(ControlMode.PercentOutput, (-(Constants.xbox1.getY(Hand.kLeft)) * .5) + stuff);
 			SmartDashboard.putNumber("Position", arm.getPosition());
 		} else {
-			if (Constants.Xbox1.getAButton()) { // Joystick is to the right
-				arm.set(armPos.INTAKE);
-			} else if (Constants.Xbox1.getYButton()) { // Joystick is up
-				arm.set(armPos.SWITCHSHOT);
-			} else if (Constants.Xbox1.getXButton()) { // Joystick is to the left
-				arm.set(armPos.BACKSHOT);
+			if (Constants.xbox1.getBButton()) { // Joystick is to the right
+				SmartDashboard.putNumber("Angle", Constants.intake);
+			} else if (Constants.xbox1.getYButton()) { // Joystick is up
+				SmartDashboard.putNumber("Angle", Constants.switchShot);
+			} else if (Constants.xbox1.getXButton()) { // Joystick is to the left
+				SmartDashboard.putNumber("Angle", Constants.backShot);
 			}
+			angle = SmartDashboard.getNumber("Angle", 0);
+			arm.set(angle);
 		}
 
-		if (Constants.Xbox1.getRawButton(9)) {
-			Constants.armSensor.setQuadraturePosition(0, 200);
-		} else {
-
-		}
+		// if (Constants.xbox1.getRawButton(9)) {
+		// Constants.armSensor.setQuadraturePosition(0, 200);
+		// }
 
 		// CLIMB
 
 		// if (DriverStation.getInstance().getMatchTime() >= 1.5) {
-		if (toggle && Constants.Xbox1.getBButton()) {
+		// if (toggle && Constants.xbox1.getY(Hand.kRight) > .7) {
+		// toggle = false;
+		// if (belt) {
+		// belt = false;
+		// Constants.PTO.set(Value.kForward);
+		// } else {
+		// belt = true;
+		// Constants.PTO.set(Value.kReverse);
+		// }
+		// } else if (!(Constants.xbox1.getY(Hand.kRight) > .7)) {
+		// if (ptoInit == false) {
+		// Constants.PTO.set(Value.kForward);
+		// ptoInit = true;
+		// }
+		// toggle = true;
+		// }
+		if (toggle && Constants.xbox2.getBButton()) {
 			toggle = false;
 			if (belt) {
 				belt = false;
 				Constants.PTO.set(Value.kForward);
+				SmartDashboard.putBoolean("PTO Engaged?", false);
 			} else {
 				belt = true;
 				Constants.PTO.set(Value.kReverse);
+				SmartDashboard.putBoolean("PTO Engaged?", true);
 			}
-		} else if (!Constants.Xbox1.getBButton()) {
+		} else if (!(Constants.xbox2.getBButton())) {
 			if (ptoInit == false) {
 				Constants.PTO.set(Value.kForward);
+				SmartDashboard.putBoolean("PTO Engaged?", false);
 				ptoInit = true;
 			}
 			toggle = true;
@@ -125,43 +148,37 @@ public class OI {
 		// arm.set(angle);
 
 		// XBOX DRIVE
-		Constants.leftFront.set(ControlMode.PercentOutput, Constants.Xbox2.getY(Hand.kLeft) * .5);
-		Constants.rightFront.set(ControlMode.PercentOutput, Constants.Xbox2.getY(Hand.kRight) * .5);
+		Constants.leftFront.set(ControlMode.PercentOutput, Constants.xbox2.getY(Hand.kLeft));
+		Constants.rightFront.set(ControlMode.PercentOutput, Constants.xbox2.getY(Hand.kRight));
 
 		// WHEEL DRIVE
 
 		if (Constants.joystick1.getRawButton(2)) {// turn in place button X
-
-			Constants.rightFront.set(ControlMode.PercentOutput, drive.valueJ);
-			Constants.leftFront.set(ControlMode.PercentOutput, -drive.valueJ);
 
 			drive.spinspot(.5);
 
 		}
 
 		else if (Constants.joystick1.getRawButton(4)) {// adjust button
-			Constants.rightFront.set(ControlMode.PercentOutput, drive.valueJ);
-			Constants.leftFront.set(ControlMode.PercentOutput, -drive.valueJ);
 
 			drive.spinspot(.25);
 
 		} else if (Constants.joystick1.getRawButton(5)) {// adjust button
-			Constants.rightFront.set(ControlMode.PercentOutput, drive.valueJ);
-			Constants.leftFront.set(ControlMode.PercentOutput, -drive.valueJ);
 
 			drive.spinspot(-.25);
 
 		} else if (Constants.joystick1.getRawButton(1)) {// TURBO NGHHHHHHH
-			Constants.rightFront.set(ControlMode.PercentOutput, drive.valueJ);
-			Constants.leftFront.set(ControlMode.PercentOutput, -drive.valueJ);
-			// drive.inverse(0.5);
-			drive.move(1, Constants.driveWheel.getX());
+
+			drive.move(-1, Constants.driveWheel.getX());
+
 		} else if (Constants.joystick1.getRawButton(3)) {// slowwwwwwwwwwww
-			drive.move(0.3, Constants.driveWheel.getX());
+
+			drive.move(-0.3, Constants.driveWheel.getX());
+
 		}
 
 		else {
-			// drive.move(-Constants.joystick1.getY(), Constants.driveWheel.getX());
+			// drive.move(Constants.joystick1.getY(), Constants.driveWheel.getX());
 
 		}
 

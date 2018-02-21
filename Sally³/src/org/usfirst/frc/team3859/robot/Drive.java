@@ -18,6 +18,8 @@ public class Drive {
 	double pointintimeright = 0;
 	double pointintimeleft = 0;
 	double pre;
+	double valueW = Constants.driveWheel.getX();
+	double valueJ = Constants.joystick1.getY();
 
 	public void setUp(boolean auto) {
 
@@ -30,6 +32,9 @@ public class Drive {
 		Constants.leftFront.setInverted(true);
 		Constants.leftMiddle.setInverted(true);
 		Constants.leftBack.setInverted(true);
+		Constants.rightFront.setInverted(true);
+		Constants.rightMiddle.setInverted(true);
+		Constants.rightBack.setInverted(true);
 
 		if (auto) {
 			Constants.leftFront.setNeutralMode(NeutralMode.Brake);
@@ -70,18 +75,20 @@ public class Drive {
 	public double getRightEncDistance() {
 		if (rightEncInit == false) {
 			Constants.rightEncSensor.setQuadraturePosition(0, 200);
+			setEnc("right");
 			rightEncInit = true;
 		}
-		double distance = Constants.rightFront.getSelectedSensorPosition(0) * ((.02761165) / 1.5);
+		double distance = Constants.rightFront.getSelectedSensorPosition(0) * (.01885);
 		return distance;
 	}
 
 	public double getLeftEncDistance() {
 		if (leftEncInit == false) {
 			Constants.rightEncSensor.setQuadraturePosition(0, 200);
+			setEnc("left");
 			leftEncInit = true;
 		}
-		double distance = Constants.rightFront.getSelectedSensorPosition(0) * ((.02761165) / 1.5);
+		double distance = Constants.rightFront.getSelectedSensorPosition(0) * (.01885);
 		return distance;
 	}
 
@@ -101,14 +108,10 @@ public class Drive {
 
 	public void set() {
 		setUp(false);
-		Constants.leftFront.set(ControlMode.PercentOutput, Constants.Xbox2.getY(Hand.kLeft));
-		Constants.rightFront.set(ControlMode.PercentOutput, Constants.Xbox2.getY(Hand.kRight));
+		Constants.leftFront.set(ControlMode.PercentOutput, Constants.xbox2.getY(Hand.kLeft));
+		Constants.rightFront.set(ControlMode.PercentOutput, Constants.xbox2.getY(Hand.kRight));
 
 	}
-
-	// WHEEL DRIVE
-	double valueW;
-	double valueJ;
 
 	// Function to set left and right drive speeds
 	public void drive(double valueJ) {
@@ -116,9 +119,24 @@ public class Drive {
 		leftDrive(valueJ);
 	}
 
+	////////////////////////////////////////////////////////////////////
+	// public void drive(double valueJ) {
+	// Constants.leftFront.set(ControlMode.PercentOutput, valueJ);
+	// Constants.rightFront.set(ControlMode.PercentOutput, valueJ);
+	// }
+	// public void leftdrive(double valueJ) {
+	// Constants.leftFront.set(ControlMode.PercentOutput, valueJ);
+	// }
+	// public void rightderive(double valueJ) {
+	// Constants.rightFront.set(ControlMode.PercentOutput, valueJ);
+	// }
+	// public double leftdrive (double valueJ, double multiplier) {
+	// double leftdrive = valueJ*multiplier;
+	// return leftdrive;
+	// }
 	// Function to set right drive speed
 	public void rightDrive(double speed) {
-		rightSet(speed);
+		rightDrive(speed);
 	}
 
 	// Function to set left drive speed
@@ -148,41 +166,7 @@ public class Drive {
 	public void rightSet(double valueJ) {
 		Constants.rightFront.set(ControlMode.PercentOutput, valueJ);
 	}
-
 	////////////////////////////////////////////////////////////////////
-	// public void drive(double valueJ) {
-	// Constants.leftFront.set(ControlMode.PercentOutput, valueJ);
-	// Constants.rightFront.set(ControlMode.PercentOutput, valueJ);
-	// }
-	// public void leftdrive(double valueJ) {
-	// Constants.leftFront.set(ControlMode.PercentOutput, valueJ);
-	// }
-	// public void rightderive(double valueJ) {
-	// Constants.rightFront.set(ControlMode.PercentOutput, valueJ);
-	// }
-	// public double leftdrive (double valueJ, double multiplier) {
-	// double leftdrive = valueJ*multiplier;
-	// return leftdrive;
-	// }
-	public void Stick() {
-		valueW = Constants.driveWheel.getX();
-		valueJ = Constants.joystick1.getY();
-
-		if (valueJ > 0) {
-			rightDrive(valueJ, 1);
-			leftDrive(valueJ, 1);
-		} else if (valueJ < 0) {
-			rightDrive(valueJ, 1);
-			leftDrive(valueJ, 1);
-		} else if (valueJ >= 0.5) {
-			rightDrive(0.5, 1);
-			leftDrive(0.5, 1);
-		} else if (valueJ <= -0.5) {
-			rightDrive(-0.5, 1);
-			leftDrive(-0.5, 1);
-
-		}
-	}
 
 	public double turnSense(double notPopTart) {
 		double sense = .035; // steering sensitivity
@@ -196,9 +180,19 @@ public class Drive {
 
 	public void move(double speed, double turn) {
 		setUp(false);
+		double speedd;
+
+		if (speed >= 0.5) {
+			speedd = .5;
+		} else if (speed <= -0.5) {
+			speedd = -.5;
+		} else {
+			speedd = speed;
+		}
+
 		// double rightSide = -(inverse(speed) - (inverse(speed) * turnSense(turn));
-		double rightSide = -(inverse(speed) - (inverse(speed) * turnSense(turn)));
-		double leftSide = inverse(speed) + (inverse(speed) * turnSense(turn));
+		double rightSide = -(inverse(speedd) - (inverse(speedd) * turnSense(turn)));
+		double leftSide = inverse(speedd) + (inverse(speedd) * turnSense(turn));
 
 		Constants.rightFront.set(ControlMode.PercentOutput, rightSide);
 		Constants.leftFront.set(ControlMode.PercentOutput, leftSide);

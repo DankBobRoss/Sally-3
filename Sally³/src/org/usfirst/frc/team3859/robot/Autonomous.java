@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Autonomous {
 	Timer autoTimer = new Timer();
 	OI oi = new OI();
-	boolean init = false;
+	private boolean init = false;
 	double order_ = 1;
 	double armOrder_ = 1;
 	double currangle = 50;
@@ -36,11 +36,15 @@ public class Autonomous {
 		double P = 0.012;
 		double I = 0.00001;
 		double D = 0;
+		if (init == false) {
+			encDistance = encDistance + 20;
+			init = true;
+		}
 		if (order == order_) {
 			double error = encDistance - oi.drive.getRightEncDistance();
 			if (error >= 2) {
 				drivePID.setPID(P, I, D);
-				Constants.rightFront.set(ControlMode.PercentOutput, -drivePID.calculate(error));
+				Constants.rightFront.set(ControlMode.PercentOutput, drivePID.calculate(error));
 				Constants.leftFront.set(ControlMode.PercentOutput, -drivePID.calculate(error));
 			} else if (error < 2) {
 				Constants.leftFront.set(ControlMode.PercentOutput, 0);
@@ -81,11 +85,11 @@ public class Autonomous {
 		if (order == order_) {
 			if (error > .5) {
 				if (direction == "left") {
-					Constants.rightFront.set(ControlMode.PercentOutput, -turnPID.calculate(error));
+					Constants.rightFront.set(ControlMode.PercentOutput, turnPID.calculate(error));
 					Constants.leftFront.set(ControlMode.PercentOutput, turnPID.calculate(error));
 
 				} else if (direction == "right") {
-					Constants.rightFront.set(ControlMode.PercentOutput, turnPID.calculate(error));
+					Constants.rightFront.set(ControlMode.PercentOutput, -turnPID.calculate(error));
 					Constants.leftFront.set(ControlMode.PercentOutput, -turnPID.calculate(error));
 
 				}
@@ -105,14 +109,29 @@ public class Autonomous {
 			init = true;
 		}
 		if (armOrder == armOrder_) {
-			oi.arm.set(state);
+			switch (state) {
+			case INTAKE:
+				Constants.cubePneumatic.set(Value.kReverse);
+				SmartDashboard.putNumber("Angle", Constants.intake);
+				break;
+			case SWITCHSHOT:
+				Constants.cubePneumatic.set(Value.kForward);
+				SmartDashboard.putNumber("Angle", Constants.switchShot);
+				break;
+			case BACKSHOT:
+				Constants.cubePneumatic.set(Value.kForward);
+				SmartDashboard.putNumber("Angle", Constants.backShot);
+				break;
+			}
+			double angle = SmartDashboard.getNumber("Angle", 0);
+			oi.arm.set(angle);
 		}
 
 	}
 
 	/**
 	 * 
-	 * @param time
+	 * @param state
 	 * @param order
 	 */
 	void cubeStuff(Constants.position state, double order) {
@@ -122,9 +141,9 @@ public class Autonomous {
 		}
 		if (order == order_) {
 			if (oi.arm.done == true) {
-				if (autoTimer.get() < 5) {
+				if (autoTimer.get() < 3) {
 					oi.in.set(state);
-				} else if (autoTimer.get() >= 5) {
+				} else if (autoTimer.get() >= 3) {
 					oi.in.set(position.DISABLE);
 					order_++;
 					armOrder_++;
@@ -193,7 +212,7 @@ public class Autonomous {
 						drive(144, 2);
 						turnToAngle("left", -90, 3);
 						drive(31.2, 4);
-						cubeStuff(position.SCORE, 5);
+						cubeStuff(position.SCORE_HARD, 5);
 						drive(31.2, 6);
 						turnToAngle("right", 90, 7);
 						drive(24, 8);
@@ -219,7 +238,7 @@ public class Autonomous {
 						drive(43.44, 5);
 						turnToAngle("left", -90, 6);
 						drive(24, 7);
-						cubeStuff(position.SCORE, 8);
+						cubeStuff(position.SCORE_HARD, 8);
 
 						// timedrive(5, speed, 1);
 						// turnToAngle("right", 90, .3, 2);
@@ -237,21 +256,22 @@ public class Autonomous {
 						drive(144, 2);
 						turnToAngle("right", 90, 3);
 						drive(31.2, 4);
-						cubeStuff(position.SCORE, 5);
+						cubeStuff(position.SCORE_HARD, 5);
 						drive(31.2, 6);
 						turnToAngle("left", -90, 7);
 						drive(24, 8);
 						turnToAngle("right", 90, 9);
 
 					} else if (side1 == 'R') {
-						// timedrive(5, speed, 1);
-						// turnToAngle("right", 90, 2);
-						// timedrive(7, speed, 3);
-						// turnToAngle("right", 90, 4);
-						// timedrive(1.1, speed, 5);
-						// turnToAngle("right", 90, 6);
-						// timedrive(1, speed, 7);
-						// cubeDeliver(8);
+						nothing(4, 1);
+						drive(144, 2);
+						turnToAngle("left", -90, 3);
+						drive(31.2, 4);
+						cubeStuff(position.SCORE_HARD, 5);
+						drive(31.2, 6);
+						turnToAngle("right", 90, 7);
+						drive(24, 8);
+						turnToAngle("left", -90, 9);
 					}
 					break;
 				case "Middle":
@@ -261,14 +281,14 @@ public class Autonomous {
 						drive(56.16, 3);
 						turnToAngle("right", 45, 4);
 						drive(16.44, 5);
-						cubeStuff(position.SCORE, 6);
+						cubeStuff(position.SCORE_HARD, 6);
 					} else if (side1 == 'R') {
 						drive(34.68, 1);
 						turnToAngle("right", 45, 2);
 						drive(30.12, 3);
 						turnToAngle("left", -45, 4);
 						drive(16.44, 5);
-						cubeStuff(position.SCORE, 6);
+						cubeStuff(position.SCORE_HARD, 6);
 					}
 
 					break;
@@ -276,15 +296,23 @@ public class Autonomous {
 			} else if (autoChoice == "cross") {
 
 			} else if (autoChoice == "test") {
-				if(Constants.c.getClosedLoopControl())
+				// Constants.PTO.set(Value.kForward);
+				// if (Constants.c.getClosedLoopControl() == false) {
+				// drive(33,1);
+				// armSet(armPos.INTAKE,1);
+				// cubeStuff(position.INTAKE, 2);
+				// drive(4,2);
+				// drive(-33,3);
+
 				drive(20, 1);
 				turnToAngle("right", 45, 2);
-				drive(40, 3);
-				turnToAngle("left", -45, 4);
-				armSet(armPos.SWITCHSHOT, 1);
-				cubeStuff(position.SCORE, 5);
-				armSet(armPos.INTAKE, 2);
-				cubeStuff(position.DISABLE, 6);
+				drive(20, 3);
+				armSet(armPos.STARTINGCONFIG, 1);
+				armSet(armPos.SWITCHSHOT, 2);
+				cubeStuff(position.SCORE_HARD, 4);
+				armSet(armPos.INTAKE, 3);
+				cubeStuff(position.DISABLE, 5);
+				// }
 				// double turnAngle = SmartDashboard.getNumber("Turn Angle", 0);
 				// turnToAngle("right", turnAngle, 1);
 

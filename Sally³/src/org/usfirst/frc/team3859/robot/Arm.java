@@ -22,6 +22,11 @@ public class Arm {
 		Constants.armRight.follow(Constants.armLeft);
 		Constants.armLeft.setSensorPhase(true);
 	}
+	// public void setUp() {
+	// Constants.armRight.setInverted(true);
+	// Constants.armRight.follow(Constants.armLeft);
+	// Constants
+	// }
 
 	// SHOULDER GEAR REDUCTION IS 240:1
 	double getPositionBLAH() {
@@ -36,8 +41,16 @@ public class Arm {
 		return position;
 	}
 
+	// double getPosition() {
+	// double position = ((Constants.armLeft.getSelectedSensorPosition(0) / 240) *
+	// 90) / 1024;
+	// SmartDashboard.putNumber("Position", position);
+	// return position;
+	// }
+
 	double getPosition() {
-		double position = ((Constants.armLeft.getSelectedSensorPosition(0) / 240) * 90) / 1024;
+		setUp();
+		double position = ((Constants.armSensor.getQuadraturePosition() / 240) * 90) / 1024;
 		SmartDashboard.putNumber("Position", position);
 		return position;
 	}
@@ -49,21 +62,22 @@ public class Arm {
 	// }
 
 	public void set(double value) {
-		setUp();
 		// double P = SmartDashboard.getNumber("P", 0);
 		// double I = SmartDashboard.getNumber("I", 0);
-		double stuff = SmartDashboard.getNumber("Stuff", 0);
-		error = value - getPosition();
+		double voltage = .14;
+		double stuff = Math.cos(((Constants.armLeft.getSelectedSensorPosition(0) / 240) * Math.PI) / 2048) * voltage;
+		error = value - (-getPosition());
 		P = 0.015;
-		I = .00005;
+		I = .0000501;
 		armPID.setPID(P, I, 0);
 
-		// if (error >= 0) {
-		Constants.armLeft.set(ControlMode.PercentOutput, armPID.calculate(error) + stuff);
-		// } else if (error < 0) {
-		// Constants.armLeft.set(ControlMode.PercentOutput, (armPID.calculate(error) *
-		// .8) + stuff);
-		// }
+		if (error >= 0) {
+			Constants.armLeft.set(ControlMode.PercentOutput, armPID.calculate(error) + stuff);
+		} else if (error < 0) {
+			Constants.armLeft.set(ControlMode.PercentOutput, (armPID.calculate(error) * .75) + stuff);
+		}
+		
+		
 		if (error < 4) {
 			done = true;
 		} else if (error >= 4) {
@@ -101,8 +115,8 @@ public class Arm {
 			break;
 
 		}
-		double angle = SmartDashboard.getNumber("Angle", 0);
-		set(angle);
+		// double angle = SmartDashboard.getNumber("Angle", 0);
+		// set(angle);
 	}
 
 }
