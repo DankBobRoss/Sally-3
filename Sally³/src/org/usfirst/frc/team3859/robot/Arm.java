@@ -25,7 +25,6 @@ public class Arm {
 	// public void setUp() {
 	// Constants.armRight.setInverted(true);
 	// Constants.armRight.follow(Constants.armLeft);
-	// Constants
 	// }
 
 	// SHOULDER GEAR REDUCTION IS 240:1
@@ -76,8 +75,7 @@ public class Arm {
 		} else if (error < 0) {
 			Constants.armLeft.set(ControlMode.PercentOutput, (armPID.calculate(error) * .75) + stuff);
 		}
-		
-		
+
 		if (error < 4) {
 			done = true;
 		} else if (error >= 4) {
@@ -100,10 +98,12 @@ public class Arm {
 			break;
 		case TEST:
 			double angle = SmartDashboard.getNumber("Angle", 0);
-			double stuff = Math.cos(((Constants.armLeft.getSelectedSensorPosition(0) / 240) * Math.PI) / 2048); // Constants.armLeft.set(ControlMode.PercentOutput,
-																												// voltage
-																												// *
-																												// stuff);
+			double stuff = Math.cos(((Constants.armLeft.getSelectedSensorPosition(0) / 240) * Math.PI) / 2048);
+
+			// Constants.armLeft.set(ControlMode.PercentOutput,
+			// voltage
+			// *
+			// stuff);
 			// Constants.armRight.set(ControlMode.PercentOutput, voltage * stuff);
 			SmartDashboard.putNumber("Stuff", stuff);
 

@@ -82,7 +82,7 @@ public class Robot extends IterativeRobot {
 		if (init == false) {
 			// Constants.armSensor.setQuadraturePosition(startAngle, 200); // this is where
 			// we set up the starting config
-			Constants.armSensor.setQuadraturePosition(-242045, 200);
+			// Constants.armSensor.setQuadraturePosition(-242045, 200);
 			// Constants.armSensor.setQuadraturePosition(0, 200);
 			init = true;
 		}
@@ -105,8 +105,9 @@ public class Robot extends IterativeRobot {
 		String gameData = DriverStation.getInstance().getGameSpecificMessage();
 		game1 = gameData.charAt(0);
 		game2 = gameData.charAt(1);
-		auto.oi.arm.set(100);
-		// auto.autoset(chooser.getSelected(), autoChoice.getSelected(), game1, game2);
+//		auto.autoset(chooser.getSelected(), autoChoice.getSelected(), game1, game2);
+		SmartDashboard.putBoolean("Limit Switch", Constants.limitSwitch.get());
+		SmartDashboard.putNumber("Right Distance", auto.oi.drive.getRightEncDistance());
 	}
 
 	// @Override
@@ -121,16 +122,15 @@ public class Robot extends IterativeRobot {
 	public void teleopPeriodic() {
 		int startAngle = 57;
 		startAngle = ((startAngle * 240) / 90) * 1024;
-		SmartDashboard.putNumber("Start Angle", startAngle);
 
-		SmartDashboard.putNumber("Arm Position RAW", Constants.armLeft.getSelectedSensorPosition(0));
 		if (init == false) {
-			Constants.armSensor.setQuadraturePosition(-242045, 200);
+			// Constants.armSensor.setQuadraturePosition(-242045, 200);
+			Constants.armSensor.setQuadraturePosition(0, 200);
 			auto.oi.drive.setUp(false);
 			auto.oi.arm.setUp();
 			init = true;
 		}
-		// auto.oi.enable();
+		auto.oi.enable();
 		SmartDashboard.putNumber("Position", (-auto.oi.arm.getPosition()));
 		SmartDashboard.putNumber("Right Enc", auto.oi.drive.getRightEncDistance());
 		SmartDashboard.putNumber("Left Enc", auto.oi.drive.getLeftEncDistance());

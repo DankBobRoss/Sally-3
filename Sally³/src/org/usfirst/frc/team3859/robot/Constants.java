@@ -73,7 +73,7 @@ public class Constants {
 	static DigitalInput limitSwitch = new DigitalInput(9);
 
 	static SensorCollection armSensor = new SensorCollection(Constants.armLeft);
-	
+
 	static SensorCollection rightEncSensor = new SensorCollection(Constants.rightFront);
 	static SensorCollection leftEncSensor = new SensorCollection(Constants.leftFront);
 

@@ -81,21 +81,22 @@ public class OI {
 
 		// ARM
 		if (Constants.xbox1.getTriggerAxis(Hand.kLeft) > .6) {
+//			if (Constants.xbox1.getBButton()) { // Joystick is to the right
+//				SmartDashboard.putNumber("Angle", Constants.intake);
+//			} else if (Constants.xbox1.getYButton()) { // Joystick is up
+//				SmartDashboard.putNumber("Angle", Constants.switchShot);
+//			} else if (Constants.xbox1.getXButton()) { // Joystick is to the left
+//				SmartDashboard.putNumber("Angle", Constants.backShot);
+//			}
+//			angle = SmartDashboard.getNumber("Angle", 0);
+			// arm.set(angle);
+		} else {
+
 			double voltage = .14;
 			double stuff = Math.cos(((Constants.armLeft.getSelectedSensorPosition(0) / 240) * Math.PI) / 2048)
 					* voltage;
 			Constants.armLeft.set(ControlMode.PercentOutput, (-(Constants.xbox1.getY(Hand.kLeft)) * .5) + stuff);
 			SmartDashboard.putNumber("Position", arm.getPosition());
-		} else {
-			if (Constants.xbox1.getBButton()) { // Joystick is to the right
-				SmartDashboard.putNumber("Angle", Constants.intake);
-			} else if (Constants.xbox1.getYButton()) { // Joystick is up
-				SmartDashboard.putNumber("Angle", Constants.switchShot);
-			} else if (Constants.xbox1.getXButton()) { // Joystick is to the left
-				SmartDashboard.putNumber("Angle", Constants.backShot);
-			}
-			angle = SmartDashboard.getNumber("Angle", 0);
-			arm.set(angle);
 		}
 
 		// if (Constants.xbox1.getRawButton(9)) {

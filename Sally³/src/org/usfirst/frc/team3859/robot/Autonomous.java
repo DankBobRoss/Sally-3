@@ -21,6 +21,7 @@ public class Autonomous {
 	boolean initt = false;
 	double speed = .3;
 	double output = 0;
+	boolean finished = false;
 	PIDcontrol turnPID = new PIDcontrol(0, 0, 0);
 	PIDcontrol drivePID = new PIDcontrol(0, 0, 0);
 
@@ -37,7 +38,7 @@ public class Autonomous {
 		double I = 0.00001;
 		double D = 0;
 		if (init == false) {
-			encDistance = encDistance + 20;
+			encDistance = encDistance + 17;
 			init = true;
 		}
 		if (order == order_) {
@@ -195,6 +196,18 @@ public class Autonomous {
 		}
 	}
 
+	public void startConfig() {
+		if (finished == false) {
+			if (Constants.limitSwitch.get() == false) {
+				Constants.armLeft.set(ControlMode.PercentOutput, -.2);
+			} else if (Constants.limitSwitch.get() == true) {
+				Constants.armLeft.set(ControlMode.PercentOutput, 0);
+				Constants.armSensor.setQuadraturePosition(0, 200);
+				finished = true;
+			}
+		}
+	}
+
 	boolean init1 = false;
 	boolean initiate = false;
 
@@ -303,15 +316,32 @@ public class Autonomous {
 				// cubeStuff(position.INTAKE, 2);
 				// drive(4,2);
 				// drive(-33,3);
-
-				drive(20, 1);
-				turnToAngle("right", 45, 2);
-				drive(20, 3);
-				armSet(armPos.STARTINGCONFIG, 1);
-				armSet(armPos.SWITCHSHOT, 2);
-				cubeStuff(position.SCORE_HARD, 4);
-				armSet(armPos.INTAKE, 3);
-				cubeStuff(position.DISABLE, 5);
+				startConfig();
+				if (finished == true) {
+					if (side1 == 'R') {
+						drive(20, 1);
+						turnToAngle("right", 45, 2);
+						drive(40, 3);
+						turnToAngle("left", -45, 4);
+						nothing(1, 5);
+						armSet(armPos.SWITCHSHOT, 1);
+						cubeStuff(position.SCORE_HARD, 6);
+						armSet(armPos.INTAKE, 2);
+						cubeStuff(position.DISABLE, 7);
+					} else if (side1 == 'L') {
+						drive(20, 1);
+						turnToAngle("left", -45, 2);
+						drive(40, 3);
+						turnToAngle("right", 45, 4);
+						nothing(1, 5);
+						armSet(armPos.SWITCHSHOT, 1);
+						cubeStuff(position.SCORE_HARD, 6);
+						armSet(armPos.INTAKE, 2);
+						cubeStuff(position.DISABLE, 7);
+					}
+				}
+				//
+				// }
 				// }
 				// double turnAngle = SmartDashboard.getNumber("Turn Angle", 0);
 				// turnToAngle("right", turnAngle, 1);
